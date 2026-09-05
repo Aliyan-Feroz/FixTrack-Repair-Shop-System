@@ -1,0 +1,3 @@
+Project Name: Repair Shop Job Card System
+Description: An end-to-end management system for repair shops to handle customer intake, device diagnosis, technician assignment, repair tracking, inventory management, and final invoicing.
+Core Goal: Digitize the manual job card process using Object-Oriented Programming principles.

@@ -1,0 +1,8 @@
+1. Authentication: Login screen and user sessions.
+2. Dashboard: Overview of open/completed jobs, pending payments, and daily revenue.
+3. Customers: Client profiles, contact info, and repair history.
+4. Job Cards: Core module for tracking repair status (Diagnosis -> Repairing -> Ready).
+5. Inventory: Parts tracking, pricing, and low-stock alerts.
+6. Technicians: Staff profiles, specialties, and active job assignments.
+7. Invoicing & Payments: Billing generation, discounts, and payment status (Cash/Pending).
+8. Reports & Settings: Daily/Monthly metrics, shop info, and database backups.

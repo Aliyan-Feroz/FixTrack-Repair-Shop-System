@@ -1,0 +1,4 @@
+- Automated database backups and data export.
+- User account roles (Admin vs. Standard Tech permissions).
+- SMS or Email integration for automated customer status updates.
+- Barcode/QR code generation for physical job card tags.

@@ -1,0 +1,36 @@
+Table: Customers
+- CustomerID (PK)
+- Name
+- Phone
+- TotalJobs
+
+Table: JobCards
+- JobID (PK)
+- CustomerID (FK)
+- DeviceDetails
+- SerialNo
+- Complaint
+- Diagnosis
+- TechID (FK)
+- Status
+
+Table: Technicians
+- TechID (PK)
+- Name
+- Specialty
+- ActiveJobsCount
+
+Table: Inventory
+- PartID (PK)
+- PartName
+- StockLevel
+- Price
+
+Table: Invoices
+- InvoiceID (PK)
+- JobID (FK)
+- LaborCharge
+- PartsTotal
+- Discount
+- GrandTotal
+- PaymentStatus

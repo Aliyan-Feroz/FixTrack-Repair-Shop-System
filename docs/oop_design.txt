@@ -1,0 +1,21 @@
+Classes & Responsibilities:
+
+1. Class Customer:
+   - Attributes: id, name, phone, jobHistory
+   - Methods: addJob(), getHistory()
+
+2. Class JobCard:
+   - Attributes: jobId, customer, device, complaint, status, assignedTech
+   - Methods: updateStatus(), assignTechnician(), addPart(), calculateTotal()
+
+3. Class Technician:
+   - Attributes: techId, name, specialty, activeJobs
+   - Methods: assignJob(), completeJob()
+
+4. Class Part (Inventory):
+   - Attributes: partId, name, stockQuantity, price
+   - Methods: updateStock(), checkLowStock()
+
+5. Class Invoice:
+   - Attributes: invoiceId, jobCard, subtotal, discount, total, isPaid
+   - Methods: generateInvoice(), processPayment(), printInvoice()
