@@ -20,24 +20,10 @@ The project is organized to separate documentation, source code, and database re
 FixTrack/
 │
 ├── README.md
-├── pom.xml
 ├── docs/
-│   ├── project-overview.txt
-│   ├── graphical-workflow.txt
-│   ├── system-modules.txt
-│   ├── database-design.txt
-│   ├── oop-design.txt
-│   └── future-features.txt
-│
-├── src/main/java/
-│   ├── business/      # Domain logic and processing
-│   ├── dao/           # Data Access Objects (Database interaction)
-│   ├── database/      # Database connection managers
-│   ├── model/         # Data entities (Customer, JobCard, etc.)
-│   └── Main.java      # Application entry point
-│
-├── repair_shop.db     # SQLite Database
-│
-└── screenshots/
-    └── (CLI execution screenshots later)
+├── lib/
+├── screenshots/
+└── src/
+    ├── business/
+    └── model/
 ```
