@@ -151,6 +151,22 @@ public class Invoice {
     public double        getGrandTotal()    { return grandTotal; }
     public PaymentStatus getPaymentStatus() { return paymentStatus; }
 
+    // ─── DAO Re-hydration Setters (for database reconstruction only) ──
+
+    /**
+     * Sets the invoice ID directly. Used by {@code InvoiceDAO} to push
+     * the auto-generated primary key back into this object after an INSERT.
+     * Do NOT call this in normal business code.
+     */
+    public void setInvoiceId(int invoiceId) { this.invoiceId = invoiceId; }
+
+    /**
+     * Sets the payment status directly without triggering payment processing.
+     * Used by {@code InvoiceDAO} during re-hydration to restore the
+     * persisted status (e.g. PAID_CASH) without re-running business logic.
+     */
+    public void setPaymentStatus(PaymentStatus paymentStatus) { this.paymentStatus = paymentStatus; }
+
     // ─── toString ─────────────────────────────────────────────
 
     @Override

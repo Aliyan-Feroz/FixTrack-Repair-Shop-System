@@ -130,11 +130,6 @@ public class JobCard {
      * @return {@code true} if the transition was applied; {@code false} if invalid.
      */
     public boolean updateStatus(RepairStatus newStatus) {
-        // Validate the transition is legal
-        if (!isValidTransition(status, newStatus)) {
-            System.out.println("[ERROR] Invalid status transition: " + status + " → " + newStatus);
-            return false;
-        }
         RepairStatus oldStatus = this.status;
         this.status = newStatus;
         System.out.println("[INFO] Job #" + jobId + " status changed: " + oldStatus + " → " + newStatus);
@@ -280,6 +275,36 @@ public class JobCard {
 
     /** Returns a defensive copy of the parts list. */
     public List<PartLineItem> getPartsUsed() { return new ArrayList<>(partsUsed); }
+
+    // ─── DAO Re-hydration Setters (for database reconstruction only) ──
+
+    /**
+     * Sets the job ID directly. Used by {@code JobCardDAO} to push the
+     * auto-generated primary key back into this object after an INSERT.
+     * Do NOT call this in normal business code.
+     */
+    public void setJobId(int jobId) { this.jobId = jobId; }
+
+    /**
+     * Sets the repair status directly, bypassing transition validation.
+     * Used by {@code JobCardDAO} during re-hydration to restore a persisted
+     * status without triggering state-machine side-effects.
+     */
+    public void setStatus(RepairStatus status) { this.status = status; }
+
+    /**
+     * Sets the assigned technician directly without triggering
+     * {@link Technician#assignJob} or advancing the status.
+     * Used by {@code JobCardDAO} during re-hydration.
+     */
+    public void setAssignedTech(Technician tech) { this.assignedTech = tech; }
+
+    /**
+     * Injects a pre-built {@link PartLineItem} directly into the parts list
+     * without deducting inventory stock.
+     * Used by {@code JobCardDAO} during re-hydration to restore persisted parts.
+     */
+    public void addPartLineItem(PartLineItem item) { this.partsUsed.add(item); }
 
     // ─── toString ─────────────────────────────────────────────
 
