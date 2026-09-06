@@ -1,0 +1,12 @@
+# Maven build output
+target/
+
+# VS Code settings
+.vscode/
+*.code-workspace
+
+# Compiled class files (just in case)
+*.class
+
+# Log files
+*.log
