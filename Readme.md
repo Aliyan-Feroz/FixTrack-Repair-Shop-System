@@ -1,4 +1,4 @@
-# Repair Shop Job Card System
+# FixTrack — Repair Shop Job Card System
 
 An Object-Oriented Programming (OOP) project designed to streamline and manage the daily operations of a repair shop. This system provides an end-to-end workflow from customer intake to final invoicing.
 
@@ -14,12 +14,13 @@ An Object-Oriented Programming (OOP) project designed to streamline and manage t
 
 ## 📂 Repository Structure
 
-The project is organized to separate documentation, source code, and database resources:
+The project is organized to separate documentation, source code, and database resources utilizing a standard Maven layout:
 
 ```text
-Repair-Shop-Job-Card-System/
+FixTrack/
 │
 ├── README.md
+├── pom.xml
 ├── docs/
 │   ├── project-overview.txt
 │   ├── graphical-workflow.txt
@@ -28,23 +29,15 @@ Repair-Shop-Job-Card-System/
 │   ├── oop-design.txt
 │   └── future-features.txt
 │
-├── src/
-│   └── (Java code later)
+├── src/main/java/
+│   ├── business/      # Domain logic and processing
+│   ├── dao/           # Data Access Objects (Database interaction)
+│   ├── database/      # Database connection managers
+│   ├── model/         # Data entities (Customer, JobCard, etc.)
+│   └── Main.java      # Application entry point
 │
-├── database/
-│   └── (database files/scripts later)
+├── repair_shop.db     # SQLite Database
 │
 └── screenshots/
-    └── (GUI screenshots later)
+    └── (CLI execution screenshots later)
 ```
-
-## 🔄 Workflow Overview
-
-The system follows a state-driven approach for handling repairs:
-`New Job` ➔ `Assign Technician` ➔ `Diagnosis` ➔ `Approval` ➔ `Repair` ➔ `Quality Check` ➔ `Invoice` ➔ `Payment` ➔ `Completed`.
-
-## 🛠️ Tech Stack
-
-- **Language:** Java
-- **Database:** (To be defined)
-- **UI:** (To be defined)
