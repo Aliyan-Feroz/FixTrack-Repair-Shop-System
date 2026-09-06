@@ -21,5 +21,13 @@
             <artifactId>sqlite-jdbc</artifactId>
             <version>3.45.1.0</version>
         </dependency>
+        
+        <!-- Resolves the SLF4J warning on boot -->
+    <!-- Resolves the SLF4J 1.x warning on boot -->
+    <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-simple</artifactId>
+        <version>1.7.36</version>
+    </dependency>
     </dependencies>
 </project>
