@@ -14,16 +14,28 @@ An Object-Oriented Programming (OOP) project designed to streamline and manage t
 
 ## 📂 Repository Structure
 
-The project is organized to separate documentation, source code, and database resources utilizing a standard Maven layout:
+The project follows a standard Maven directory layout separating source code, documentation, database configurations, and assets:
 
 ```text
 FixTrack/
 │
 ├── README.md
+├── pom.xml
+├── repair_shop.db
 ├── docs/
-├── lib/
+│   ├── database_design.txt
+│   ├── future_features.txt
+│   ├── graphical_workflow.txt
+│   ├── oop_design.txt
+│   ├── project_overview.txt
+│   └── system_modules.txt
 ├── screenshots/
 └── src/
-    ├── business/
-    └── model/
+    └── main/
+        └── java/
+            ├── business/   # Domain logic and workflow processing
+            ├── dao/        # Data Access Objects for database operations
+            ├── database/   # Database connection and schema manager
+            ├── model/      # Core entities (Customer, JobCard, Part, Technician)
+            └── Main.java   # Application entry point & CLI runner
 ```
