@@ -2,10 +2,25 @@
 
 An Object-Oriented Programming (OOP) project designed to streamline and manage the daily operations of a repair shop. This system provides an end-to-end workflow from customer intake to final invoicing.
 
+## ⚡ Quick Start (Run Without Any IDE)
+
+Simply double-click **`run.bat`** (or execute `.\run.ps1` in PowerShell).
+
+### Sign In Credentials
+- **Username:** `admin`
+- **Password:** `1234`
+*(Or click the **"Fill Demo Credentials"** link on the login card).*
+
+### CLI / Maven Run
+```bash
+mvn javafx:run
+```
+*(For standalone terminal CLI mode: `mvn exec:java -Dexec.mainClass="Main"`)*
+
 ## Requirements
 
-- Java 25 LTS
-- Apache Maven 3.9 or later
+- Java 21+ or 25 LTS
+- Apache Maven 3.9+
 
 ## 🚀 Features
 
