@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="ui.controller.TechniciansController"
+      spacing="16" styleClass="view-container">
+
+    <!-- Top Action Bar -->
+    <HBox spacing="14" alignment="CENTER_LEFT">
+        <TextField fx:id="txtSearch" promptText="🔍  Search technicians by name or specialty..." prefWidth="360" />
+        <Button text="🔄 Refresh" onAction="#handleRefresh" styleClass="btn-secondary" />
+
+        <Region HBox.hgrow="ALWAYS" />
+
+        <Button text="+ Add Technician" onAction="#handleAddTechnician" styleClass="btn-primary" />
+    </HBox>
+
+    <!-- Content: Table (Left) + Detail & Workload Panel (Right) -->
+    <HBox spacing="16" VBox.vgrow="ALWAYS">
+        <!-- Technicians Table -->
+        <VBox spacing="10" HBox.hgrow="ALWAYS" styleClass="content-card">
+            <Label text="Staff Roster" styleClass="card-title" />
+            <TableView fx:id="tblTechnicians" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="colTechId" text="ID" prefWidth="60" />
+                    <TableColumn fx:id="colName" text="Technician Name" prefWidth="200" />
+                    <TableColumn fx:id="colSpecialty" text="Technical Specialty" prefWidth="220" />
+                    <TableColumn fx:id="colActiveJobs" text="Active Jobs" prefWidth="100" />
+                    <TableColumn fx:id="colWorkloadStatus" text="Workload Status" prefWidth="130" />
+                </columns>
+            </TableView>
+        </VBox>
+
+        <!-- Assigned Tasks Inspection Panel -->
+        <VBox spacing="14" styleClass="content-card" prefWidth="420">
+            <Label text="Technician Workload Inspection" styleClass="card-title" />
+
+            <!-- Profile Summary Box -->
+            <VBox spacing="8" styleClass="user-box">
+                <HBox spacing="10">
+                    <Label text="Technician:" styleClass="card-subtitle" prefWidth="80" />
+                    <Label fx:id="lblSelectedTechName" text="-" styleClass="user-name" />
+                </HBox>
+                <HBox spacing="10">
+                    <Label text="Specialty:" styleClass="card-subtitle" prefWidth="80" />
+                    <Label fx:id="lblSelectedTechSpecialty" text="-" styleClass="user-role" />
+                </HBox>
+            </VBox>
+
+            <Separator />
+
+            <Label text="Assigned Repair Tasks" styleClass="card-subtitle" />
+            <TextArea fx:id="txtAssignedJobs" editable="false" wrapText="true" VBox.vgrow="ALWAYS" prefHeight="280" />
+        </VBox>
+    </HBox>
+
+</VBox>
+

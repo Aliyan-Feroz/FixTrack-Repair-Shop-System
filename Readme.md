@@ -2,6 +2,11 @@
 
 An Object-Oriented Programming (OOP) project designed to streamline and manage the daily operations of a repair shop. This system provides an end-to-end workflow from customer intake to final invoicing.
 
+## Requirements
+
+- Java 25 LTS
+- Apache Maven 3.9 or later
+
 ## 🚀 Features
 
 - **Dashboard:** High-level overview of open, in-repair, and completed jobs, alongside pending payments and daily revenue.

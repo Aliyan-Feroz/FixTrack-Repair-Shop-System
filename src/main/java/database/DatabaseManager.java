@@ -1,13 +1,58 @@
 package database;
 
+import java.io.File;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
 public class DatabaseManager {
-    // The database file will be generated in your project root
-    private static final String DB_URL = "jdbc:sqlite:repair_shop.db";
+    private static final String DB_FILE_NAME = "repair_shop.db";
+    private static final String DB_URL = initDbUrl();
+
+    private static String initDbUrl() {
+        File dbFile = resolveDatabaseFile();
+        return "jdbc:sqlite:" + dbFile.getAbsolutePath();
+    }
+
+    private static File resolveDatabaseFile() {
+        // 1. If launched from the outer workspace (e.g. OOP PROJECT), resolve inside FixTrack-Repair-Shop-System/
+        File subDir = new File("FixTrack-Repair-Shop-System");
+        if (subDir.isDirectory()) {
+            return new File(subDir, DB_FILE_NAME);
+        }
+
+        // 2. If launched directly inside FixTrack-Repair-Shop-System/
+        File inCurrentDir = new File(DB_FILE_NAME);
+        File pomFile = new File("pom.xml");
+        if (inCurrentDir.exists() || pomFile.exists()) {
+            return inCurrentDir;
+        }
+
+        // 3. Fallback: resolve relative to compiled class / target folder location
+        try {
+            URL codeSourceUrl = DatabaseManager.class.getProtectionDomain().getCodeSource().getLocation();
+            if (codeSourceUrl != null) {
+                File codeLocation = new File(codeSourceUrl.toURI());
+                File dir = codeLocation.isDirectory() ? codeLocation : codeLocation.getParentFile();
+                while (dir != null && (dir.getName().equals("classes") || dir.getName().equals("target"))) {
+                    dir = dir.getParentFile();
+                }
+                if (dir != null && dir.exists()) {
+                    return new File(dir, DB_FILE_NAME);
+                }
+            }
+        } catch (Exception ignored) {
+            // Fall back to current directory
+        }
+
+        return inCurrentDir;
+    }
+
+    public static String getDbUrl() {
+        return DB_URL;
+    }
 
     public static Connection getConnection() throws SQLException {
         try {

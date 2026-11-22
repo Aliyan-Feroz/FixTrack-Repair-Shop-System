@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane fx:id="mainRoot" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="ui.controller.MainLayoutController"
+            styleClass="app-root">
+
+    <!-- Left Sidebar -->
+    <left>
+        <VBox styleClass="sidebar" prefWidth="240">
+            <!-- Brand Box -->
+            <VBox styleClass="brand-box">
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <Label text="⚡" styleClass="brand-title" />
+                    <Label text="FixTrack" styleClass="brand-title" />
+                </HBox>
+                <Label text="REPAIR WORKSHOP SUITE" styleClass="brand-subtitle" />
+            </VBox>
+
+            <!-- User Status Snippet -->
+            <HBox styleClass="user-box">
+                <Label text="👤" styleClass="brand-subtitle" />
+                <VBox spacing="1">
+                    <Label fx:id="lblUserName" text="Admin" styleClass="user-name" />
+                    <Label text="Manager Access" styleClass="user-role" />
+                </VBox>
+            </HBox>
+
+            <Separator />
+
+            <!-- Navigation Links -->
+            <VBox spacing="4">
+                <Button fx:id="btnDashboard" text="📊   Dashboard" onAction="#handleNavDashboard" maxWidth="Infinity" styleClass="nav-btn" />
+                <Button fx:id="btnCustomers" text="👥   Customers" onAction="#handleNavCustomers" maxWidth="Infinity" styleClass="nav-btn" />
+                <Button fx:id="btnJobCards" text="📋   Job Cards" onAction="#handleNavJobCards" maxWidth="Infinity" styleClass="nav-btn" />
+                <Button fx:id="btnInventory" text="📦   Inventory" onAction="#handleNavInventory" maxWidth="Infinity" styleClass="nav-btn" />
+                <Button fx:id="btnTechnicians" text="🔧   Technicians" onAction="#handleNavTechnicians" maxWidth="Infinity" styleClass="nav-btn" />
+                <Button fx:id="btnInvoices" text="💳   Invoicing &amp; Billing" onAction="#handleNavInvoices" maxWidth="Infinity" styleClass="nav-btn" />
+                <Button fx:id="btnReports" text="📈   System Reports" onAction="#handleNavReports" maxWidth="Infinity" styleClass="nav-btn" />
+            </VBox>
+
+            <!-- Spacer -->
+            <Region VBox.vgrow="ALWAYS" />
+
+            <Separator />
+
+            <!-- Bottom Actions -->
+            <VBox spacing="6">
+                <Button fx:id="btnThemeToggle" text="☀️  Light Mode" onAction="#handleThemeToggle" maxWidth="Infinity" styleClass="nav-btn" />
+                <Button fx:id="btnLogout" text="🚪  Logout" onAction="#handleLogout" maxWidth="Infinity" styleClass="nav-btn,nav-btn-danger" />
+            </VBox>
+        </VBox>
+    </left>
+
+    <!-- Top Header Bar -->
+    <top>
+        <HBox styleClass="header-bar" spacing="16">
+            <VBox spacing="2">
+                <Label fx:id="viewTitleLabel" text="Dashboard Overview" styleClass="header-title" />
+                <Label fx:id="viewSubtitleLabel" text="Live operational status and shop overview" styleClass="card-subtitle" />
+            </VBox>
+
+            <Region HBox.hgrow="ALWAYS" />
+
+            <HBox spacing="12" alignment="CENTER_RIGHT">
+                <Label fx:id="lblCurrentDate" text="Date" styleClass="card-subtitle" />
+                <Label text="● Database Connected" styleClass="header-status-badge" />
+            </HBox>
+        </HBox>
+    </top>
+
+    <!-- Center Swappable Content Area -->
+    <center>
+        <StackPane fx:id="contentArea" styleClass="app-root" />
+    </center>
+
+</BorderPane>
+

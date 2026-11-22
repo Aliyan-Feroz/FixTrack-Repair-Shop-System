@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="ui.controller.DashboardController"
+            fitToWidth="true" styleClass="scroll-container">
+
+    <VBox spacing="20" styleClass="view-container">
+
+        <!-- Welcome Banner -->
+        <HBox spacing="16" alignment="CENTER_LEFT">
+            <VBox spacing="4">
+                <Label text="Repair Shop KPI Overview" styleClass="card-title" />
+                <Label text="Real-time performance indicators and operational metrics" styleClass="card-subtitle" />
+            </VBox>
+
+            <Region HBox.hgrow="ALWAYS" />
+
+            <!-- Quick Action Buttons -->
+            <HBox spacing="10">
+                <Button text="+ New Job Card" onAction="#handleQuickNewJob" styleClass="btn-primary" />
+                <Button text="+ New Customer" onAction="#handleQuickNewCustomer" styleClass="btn-outline" />
+                <Button text="📦 Restock Parts" onAction="#handleQuickRestock" styleClass="btn-secondary" />
+                <Button text="💳 Invoicing" onAction="#handleQuickInvoices" styleClass="btn-secondary" />
+            </HBox>
+        </HBox>
+
+        <!-- KPI Grid (6 Metric Cards) -->
+        <GridPane hgap="16" vgap="16">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="33.33" />
+                <ColumnConstraints percentWidth="33.33" />
+                <ColumnConstraints percentWidth="33.33" />
+            </columnConstraints>
+
+            <!-- Row 1 -->
+            <!-- 1. Open Jobs -->
+            <VBox GridPane.columnIndex="0" GridPane.rowIndex="0" styleClass="kpi-card,kpi-cyan">
+                <HBox styleClass="kpi-header">
+                    <Label text="📋" styleClass="kpi-icon" />
+                    <Label text="OPEN JOBS" styleClass="kpi-title" />
+                </HBox>
+                <Label fx:id="lblOpenJobs" text="0" styleClass="kpi-value" />
+                <Label text="Active repairs in workshop" styleClass="kpi-subtext" />
+            </VBox>
+
+            <!-- 2. Completed Jobs -->
+            <VBox GridPane.columnIndex="1" GridPane.rowIndex="0" styleClass="kpi-card,kpi-emerald">
+                <HBox styleClass="kpi-header">
+                    <Label text="✅" styleClass="kpi-icon" />
+                    <Label text="COMPLETED JOBS" styleClass="kpi-title" />
+                </HBox>
+                <Label fx:id="lblCompletedJobs" text="0" styleClass="kpi-value" />
+                <Label text="Finished &amp; delivered devices" styleClass="kpi-subtext" />
+            </VBox>
+
+            <!-- 3. Pending Payments -->
+            <VBox GridPane.columnIndex="2" GridPane.rowIndex="0" styleClass="kpi-card,kpi-amber">
+                <HBox styleClass="kpi-header">
+                    <Label text="⏳" styleClass="kpi-icon" />
+                    <Label text="PENDING PAYMENTS" styleClass="kpi-title" />
+                </HBox>
+                <Label fx:id="lblPendingPayments" text="0" styleClass="kpi-value" />
+                <Label text="Invoices awaiting settlement" styleClass="kpi-subtext" />
+            </VBox>
+
+            <!-- Row 2 -->
+            <!-- 4. Total Revenue -->
+            <VBox GridPane.columnIndex="0" GridPane.rowIndex="1" styleClass="kpi-card,kpi-teal">
+                <HBox styleClass="kpi-header">
+                    <Label text="💰" styleClass="kpi-icon" />
+                    <Label text="TOTAL REVENUE" styleClass="kpi-title" />
+                </HBox>
+                <Label fx:id="lblTotalRevenue" text="\$0.00" styleClass="kpi-value" />
+                <Label text="Settled cash &amp; card receipts" styleClass="kpi-subtext" />
+            </VBox>
+
+            <!-- 5. Total Customers -->
+            <VBox GridPane.columnIndex="1" GridPane.rowIndex="1" styleClass="kpi-card,kpi-blue">
+                <HBox styleClass="kpi-header">
+                    <Label text="👥" styleClass="kpi-icon" />
+                    <Label text="REGISTERED CUSTOMERS" styleClass="kpi-title" />
+                </HBox>
+                <Label fx:id="lblTotalCustomers" text="0" styleClass="kpi-value" />
+                <Label text="Total customer database size" styleClass="kpi-subtext" />
+            </VBox>
+
+            <!-- 6. Active Technicians -->
+            <VBox GridPane.columnIndex="2" GridPane.rowIndex="1" styleClass="kpi-card,kpi-purple">
+                <HBox styleClass="kpi-header">
+                    <Label text="🔧" styleClass="kpi-icon" />
+                    <Label text="TECHNICIAN ROSTER" styleClass="kpi-title" />
+                </HBox>
+                <Label fx:id="lblActiveTechnicians" text="0" styleClass="kpi-value" />
+                <Label text="Active technical specialists" styleClass="kpi-subtext" />
+            </VBox>
+        </GridPane>
+
+        <!-- Two Columns: Recent Jobs & Low Stock Alerts -->
+        <HBox spacing="16">
+            <!-- Left: Recent Job Cards Table -->
+            <VBox HBox.hgrow="ALWAYS" styleClass="content-card" prefWidth="650">
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <VBox spacing="2">
+                        <Label text="Active &amp; Recent Repairs" styleClass="card-title" />
+                        <Label text="Live status of workshop repairs" styleClass="card-subtitle" />
+                    </VBox>
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Button text="View All Jobs →" onAction="#handleQuickNewJob" styleClass="btn-outline" />
+                </HBox>
+
+                <TableView fx:id="tblRecentJobs" prefHeight="260">
+                    <columns>
+                        <TableColumn fx:id="colJobId" text="Job #" prefWidth="65" />
+                        <TableColumn fx:id="colJobCustomer" text="Customer" prefWidth="130" />
+                        <TableColumn fx:id="colJobDevice" text="Device" prefWidth="140" />
+                        <TableColumn fx:id="colJobTech" text="Technician" prefWidth="120" />
+                        <TableColumn fx:id="colJobStatus" text="Status" prefWidth="130" />
+                        <TableColumn fx:id="colJobTotal" text="Est. Total" prefWidth="90" />
+                    </columns>
+                </TableView>
+            </VBox>
+
+            <!-- Right: Low Stock Alert Table -->
+            <VBox styleClass="content-card" prefWidth="420">
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <VBox spacing="2">
+                        <Label text="Low Stock Alerts" styleClass="card-title" />
+                        <Label text="Inventory items at or below 5 units" styleClass="card-subtitle" />
+                    </VBox>
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Button text="Inventory →" onAction="#handleQuickRestock" styleClass="btn-outline" />
+                </HBox>
+
+                <TableView fx:id="tblLowStock" prefHeight="260">
+                    <columns>
+                        <TableColumn fx:id="colPartId" text="ID" prefWidth="45" />
+                        <TableColumn fx:id="colPartName" text="Part Name" prefWidth="150" />
+                        <TableColumn fx:id="colPartStock" text="Stock" prefWidth="60" />
+                        <TableColumn fx:id="colPartPrice" text="Unit Price" prefWidth="80" />
+                        <TableColumn fx:id="colPartStatus" text="Alert" prefWidth="85" />
+                    </columns>
+                </TableView>
+            </VBox>
+        </HBox>
+
+    </VBox>
+
+</ScrollPane>
+

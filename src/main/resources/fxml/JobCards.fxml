@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="ui.controller.JobCardsController"
+      spacing="14" styleClass="view-container">
+
+    <!-- Filter & Action Bar -->
+    <HBox spacing="12" alignment="CENTER_LEFT">
+        <TextField fx:id="txtSearch" promptText="🔍  Search by Job #, customer, device, serial..." prefWidth="320" />
+
+        <HBox spacing="6" alignment="CENTER_LEFT">
+            <Label text="Status:" styleClass="card-subtitle" />
+            <ComboBox fx:id="cmbStatusFilter" prefWidth="160" />
+        </HBox>
+
+        <Button text="🔄 Refresh" onAction="#handleRefresh" styleClass="btn-secondary" />
+
+        <Region HBox.hgrow="ALWAYS" />
+
+        <Button text="+ New Job Card" onAction="#handleNewJobCard" styleClass="btn-primary" />
+    </HBox>
+
+    <!-- Job Cards Table -->
+    <VBox spacing="10" VBox.vgrow="ALWAYS" styleClass="content-card">
+        <TableView fx:id="tblJobCards" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="colJobId" text="Job #" prefWidth="65" />
+                <TableColumn fx:id="colCustomer" text="Customer" prefWidth="150" />
+                <TableColumn fx:id="colDevice" text="Device" prefWidth="160" />
+                <TableColumn fx:id="colSerial" text="Serial Number" prefWidth="130" />
+                <TableColumn fx:id="colTech" text="Assigned Tech" prefWidth="130" />
+                <TableColumn fx:id="colStatus" text="Repair Status" prefWidth="140" />
+                <TableColumn fx:id="colLabor" text="Labor ($)" prefWidth="85" />
+                <TableColumn fx:id="colPartsTotal" text="Parts ($)" prefWidth="85" />
+                <TableColumn fx:id="colGrandTotal" text="Total ($)" prefWidth="90" />
+                <TableColumn fx:id="colDate" text="Date Logged" prefWidth="130" />
+            </columns>
+        </TableView>
+
+        <!-- Dynamic Action Bar for Selected Job Card -->
+        <VBox spacing="8" styleClass="user-box">
+            <Label fx:id="lblSelectedJobSummary" text="Select a job card to manage status, assign technicians, or add parts." styleClass="card-subtitle" />
+
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Button fx:id="btnAdvanceStatus" text="⏩ Advance Status" onAction="#handleAdvanceStatus" styleClass="btn-primary" />
+                <Button fx:id="btnAssignTech" text="🔧 Assign Tech" onAction="#handleAssignTech" styleClass="btn-secondary" />
+                <Button fx:id="btnUpdateDiagnosis" text="📝 Diagnosis &amp; Labor" onAction="#handleUpdateDiagnosis" styleClass="btn-secondary" />
+                <Button fx:id="btnAddParts" text="📦 Add Parts" onAction="#handleAddParts" styleClass="btn-secondary" />
+                <Button fx:id="btnViewSummary" text="📄 View Summary" onAction="#handleViewSummary" styleClass="btn-outline" />
+            </HBox>
+        </VBox>
+    </VBox>
+
+</VBox>
+

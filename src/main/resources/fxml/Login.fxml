@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<StackPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="ui.controller.LoginController"
+           styleClass="login-root">
+
+    <VBox styleClass="login-card">
+        <!-- Logo & Branding Header -->
+        <VBox alignment="CENTER" spacing="6">
+            <Label text="⚡" styleClass="login-icon" />
+            <Label text="FixTrack" styleClass="login-title" />
+            <Label text="Professional Repair Shop Management" styleClass="login-subtitle" />
+        </VBox>
+
+        <Separator />
+
+        <!-- Input Fields -->
+        <VBox spacing="12">
+            <VBox spacing="4">
+                <Label text="Username" styleClass="card-subtitle" />
+                <TextField fx:id="usernameField" promptText="Enter username (admin)" onAction="#handleLogin" />
+            </VBox>
+
+            <VBox spacing="4">
+                <Label text="Password" styleClass="card-subtitle" />
+                <PasswordField fx:id="passwordField" promptText="Enter password (1234)" onAction="#handleLogin" />
+            </VBox>
+
+            <Label fx:id="errorLabel" styleClass="login-error-label" />
+        </VBox>
+
+        <!-- Actions -->
+        <VBox spacing="10" alignment="CENTER">
+            <Button fx:id="btnLogin" text="Sign In to Dashboard" onAction="#handleLogin" maxWidth="Infinity" styleClass="btn-primary" />
+            <Button text="Quick Fill Demo (admin / 1234)" onAction="#handleQuickDemoFill" maxWidth="Infinity" styleClass="btn-outline" />
+        </VBox>
+
+        <Separator />
+
+        <Label text="FixTrack System v1.0 • Built with JavaFX &amp; SQLite" styleClass="card-subtitle" />
+    </VBox>
+
+</StackPane>
+

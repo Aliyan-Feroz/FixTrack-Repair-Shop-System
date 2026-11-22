@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="ui.controller.CustomersController"
+      spacing="16" styleClass="view-container">
+
+    <!-- Top Action Bar -->
+    <HBox spacing="14" alignment="CENTER_LEFT">
+        <TextField fx:id="txtSearch" promptText="🔍  Search by customer name, phone, or ID..." prefWidth="360" />
+        <Button text="🔄 Refresh" onAction="#handleRefresh" styleClass="btn-secondary" />
+
+        <Region HBox.hgrow="ALWAYS" />
+
+        <Button text="+ Add Customer" onAction="#handleAddCustomer" styleClass="btn-primary" />
+    </HBox>
+
+    <!-- Main Content Area: Customers Table (Left) + Details Card (Right) -->
+    <HBox spacing="16" VBox.vgrow="ALWAYS">
+        <!-- Customers Table -->
+        <VBox spacing="10" HBox.hgrow="ALWAYS" styleClass="content-card">
+            <Label text="Customer Directory" styleClass="card-title" />
+            <TableView fx:id="tblCustomers" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="colId" text="ID" prefWidth="60" />
+                    <TableColumn fx:id="colName" text="Customer Name" prefWidth="220" />
+                    <TableColumn fx:id="colPhone" text="Phone Number" prefWidth="180" />
+                    <TableColumn fx:id="colTotalJobs" text="Total Jobs" prefWidth="100" />
+                </columns>
+            </TableView>
+        </VBox>
+
+        <!-- Customer Repair History / Details Card -->
+        <VBox spacing="14" styleClass="content-card" prefWidth="420">
+            <Label text="Customer Profile &amp; Service History" styleClass="card-title" />
+
+            <!-- Profile Summary Box -->
+            <VBox spacing="8" styleClass="user-box">
+                <HBox spacing="10">
+                    <Label text="Name:" styleClass="card-subtitle" prefWidth="70" />
+                    <Label fx:id="lblDetailName" text="-" styleClass="user-name" />
+                </HBox>
+                <HBox spacing="10">
+                    <Label text="Phone:" styleClass="card-subtitle" prefWidth="70" />
+                    <Label fx:id="lblDetailPhone" text="-" styleClass="user-role" />
+                </HBox>
+                <HBox spacing="10">
+                    <Label text="Repairs:" styleClass="card-subtitle" prefWidth="70" />
+                    <Label fx:id="lblDetailTotalJobs" text="0" styleClass="kpi-title" />
+                </HBox>
+            </VBox>
+
+            <Separator />
+
+            <Label text="Full Repair Log" styleClass="card-subtitle" />
+            <TextArea fx:id="txtRepairHistory" editable="false" wrapText="true" VBox.vgrow="ALWAYS" prefHeight="260" />
+
+            <Button fx:id="btnNewJobForCustomer" text="📋 Create Job Card for this Customer" onAction="#handleCreateJobForCustomer" maxWidth="Infinity" styleClass="btn-outline" />
+        </VBox>
+    </HBox>
+
+</VBox>
+

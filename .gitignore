@@ -5,7 +5,7 @@ target/
 .vscode/
 *.code-workspace
 
-# Compiled class files (just in case)
+# Compiled class files
 *.class
 
 # Log files

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="ui.controller.InvoicesController"
+      spacing="14" styleClass="view-container">
+
+    <!-- Top Action Bar -->
+    <HBox spacing="14" alignment="CENTER_LEFT">
+        <TextField fx:id="txtSearch" promptText="🔍  Search by Invoice #, Job #, customer, device..." prefWidth="340" />
+
+        <HBox spacing="6" alignment="CENTER_LEFT">
+            <Label text="Payment Status:" styleClass="card-subtitle" />
+            <ComboBox fx:id="cmbPaymentFilter" prefWidth="150" />
+        </HBox>
+
+        <Button text="🔄 Refresh" onAction="#handleRefresh" styleClass="btn-secondary" />
+
+        <Region HBox.hgrow="ALWAYS" />
+
+        <Button text="+ Generate Invoice" onAction="#handleGenerateInvoice" styleClass="btn-primary" />
+    </HBox>
+
+    <!-- Table Container -->
+    <VBox spacing="10" VBox.vgrow="ALWAYS" styleClass="content-card">
+        <TableView fx:id="tblInvoices" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="colInvoiceId" text="Invoice #" prefWidth="80" />
+                <TableColumn fx:id="colJobId" text="Job #" prefWidth="70" />
+                <TableColumn fx:id="colCustomer" text="Customer" prefWidth="180" />
+                <TableColumn fx:id="colDevice" text="Device" prefWidth="180" />
+                <TableColumn fx:id="colPartsTotal" text="Parts ($)" prefWidth="100" />
+                <TableColumn fx:id="colLabor" text="Labor ($)" prefWidth="100" />
+                <TableColumn fx:id="colDiscount" text="Discount ($)" prefWidth="100" />
+                <TableColumn fx:id="colGrandTotal" text="Grand Total ($)" prefWidth="120" />
+                <TableColumn fx:id="colPaymentStatus" text="Payment Status" prefWidth="140" />
+            </columns>
+        </TableView>
+
+        <!-- Selected Invoice Action Bar -->
+        <HBox spacing="12" alignment="CENTER_LEFT" styleClass="user-box">
+            <Label text="Actions for selected invoice:" styleClass="card-subtitle" />
+            <Button fx:id="btnProcessPayment" text="💳 Process Payment (Cash / Card)" onAction="#handleProcessPayment" styleClass="btn-primary" />
+            <Button fx:id="btnViewReceipt" text="📄 View / Print Official Receipt" onAction="#handleViewReceipt" styleClass="btn-outline" />
+        </HBox>
+    </VBox>
+
+</VBox>
+
