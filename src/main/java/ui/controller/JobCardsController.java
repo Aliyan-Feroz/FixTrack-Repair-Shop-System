@@ -5,6 +5,7 @@ import dao.CustomerDAO;
 import dao.InventoryDAO;
 import dao.JobCardDAO;
 import dao.TechnicianDAO;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -23,6 +24,7 @@ import ui.context.AppContext;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 public class JobCardsController {
 
@@ -36,18 +38,29 @@ public class JobCardsController {
     @FXML private TableColumn<JobCard, String> colSerial;
     @FXML private TableColumn<JobCard, String> colTech;
     @FXML private TableColumn<JobCard, String> colStatus;
-    @FXML private TableColumn<JobCard, Double> colLabor;
-    @FXML private TableColumn<JobCard, Double> colPartsTotal;
     @FXML private TableColumn<JobCard, Double> colGrandTotal;
     @FXML private TableColumn<JobCard, String> colDate;
 
-    // Action Panel Controls
+    // Contextual Detail Drawer
+    @FXML private VBox drawerEmptyState;
+    @FXML private VBox drawerContentState;
+    @FXML private Label lblDrawerJobTitle;
+    @FXML private Label lblDrawerStatusBadge;
+    @FXML private Label lblDrawerCustomer;
+    @FXML private Label lblDrawerDevice;
+    @FXML private Label lblDrawerSerial;
+    @FXML private Label lblDrawerTech;
+    @FXML private Label lblDrawerComplaint;
+    @FXML private Label lblDrawerDiagnosis;
+    @FXML private Label lblDrawerLabor;
+    @FXML private Label lblDrawerParts;
+    @FXML private Label lblDrawerTotal;
+
     @FXML private Button btnAdvanceStatus;
     @FXML private Button btnAssignTech;
     @FXML private Button btnUpdateDiagnosis;
     @FXML private Button btnAddParts;
-    @FXML private Button btnViewSummary;
-    @FXML private Label lblSelectedJobSummary;
+    @FXML private Button btnGenerateInvoice;
 
     private final ObservableList<JobCard> jobList = FXCollections.observableArrayList();
     private FilteredList<JobCard> filteredJobs;
@@ -59,7 +72,7 @@ public class JobCardsController {
         loadJobCards();
 
         tblJobCards.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, selected) -> {
-            updateActionButtons(selected);
+            displayJobDetails(selected);
         });
     }
 
@@ -72,13 +85,16 @@ public class JobCardsController {
         colTech.setCellValueFactory(data -> new SimpleStringProperty(
                 data.getValue().getAssignedTech() != null ? data.getValue().getAssignedTech().getName() : "Unassigned"));
         colStatus.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getStatus().name()));
-        colLabor.setCellValueFactory(data -> new SimpleDoubleProperty(data.getValue().getLaborCharge()).asObject());
-        colPartsTotal.setCellValueFactory(data -> new SimpleDoubleProperty(data.getValue().getPartsTotal()).asObject());
         colGrandTotal.setCellValueFactory(data -> new SimpleDoubleProperty(data.getValue().calculateTotal()).asObject());
         colDate.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getDateCreated()));
 
-        // Styled Status Badges
+        // Translucent pill status badges
         colStatus.setCellFactory(col -> new TableCell<JobCard, String>() {
+            private final Label badge = new Label();
+            {
+                badge.getStyleClass().add("badge");
+            }
+
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
@@ -86,8 +102,8 @@ public class JobCardsController {
                     setText(null);
                     setGraphic(null);
                 } else {
-                    Label badge = new Label(item.replace("_", " "));
-                    badge.getStyleClass().add("badge");
+                    badge.setText(item.replace("_", " "));
+                    badge.getStyleClass().removeIf(c -> c.startsWith("badge-"));
                     switch (item) {
                         case "INTAKE": badge.getStyleClass().add("badge-intake"); break;
                         case "DIAGNOSIS": badge.getStyleClass().add("badge-diagnosis"); break;
@@ -105,21 +121,14 @@ public class JobCardsController {
             }
         });
 
-        // Price Formatters
-        colLabor.setCellFactory(col -> formatCurrencyCell());
-        colPartsTotal.setCellFactory(col -> formatCurrencyCell());
-        colGrandTotal.setCellFactory(col -> formatCurrencyCell());
-    }
-
-    private TableCell<JobCard, Double> formatCurrencyCell() {
-        return new TableCell<JobCard, Double>() {
+        colGrandTotal.setCellFactory(col -> new TableCell<JobCard, Double>() {
             @Override
             protected void updateItem(Double item, boolean empty) {
                 super.updateItem(item, empty);
                 if (empty || item == null) setText(null);
                 else setText(String.format("$%.2f", item));
             }
-        };
+        });
     }
 
     private void setupFilters() {
@@ -143,10 +152,8 @@ public class JobCardsController {
                 String cust = job.getCustomer() != null ? job.getCustomer().getName().toLowerCase() : "";
                 String dev = job.getDeviceDetails() != null ? job.getDeviceDetails().toLowerCase() : "";
                 String sn = job.getSerialNo() != null ? job.getSerialNo().toLowerCase() : "";
-                String comp = job.getComplaint() != null ? job.getComplaint().toLowerCase() : "";
 
-                return idStr.contains(search) || cust.contains(search) || dev.contains(search) ||
-                        sn.contains(search) || comp.contains(search);
+                return idStr.contains(search) || cust.contains(search) || dev.contains(search) || sn.contains(search);
             });
         };
 
@@ -157,30 +164,55 @@ public class JobCardsController {
     }
 
     public void loadJobCards() {
-        JobCardDAO dao = AppContext.getInstance().getJobCardDAO();
-        List<JobCard> list = dao.getAllJobCards();
-        jobList.setAll(list);
-
-        if (!jobList.isEmpty()) {
-            tblJobCards.getSelectionModel().selectFirst();
-        } else {
-            updateActionButtons(null);
-        }
+        CompletableFuture.supplyAsync(() -> AppContext.getInstance().getJobCardDAO().getAllJobCards())
+                .thenAccept(list -> Platform.runLater(() -> {
+                    jobList.setAll(list);
+                    if (!jobList.isEmpty()) {
+                        tblJobCards.getSelectionModel().selectFirst();
+                    } else {
+                        displayJobDetails(null);
+                    }
+                }));
     }
 
-    private void updateActionButtons(JobCard jc) {
-        boolean disabled = (jc == null);
-        btnAdvanceStatus.setDisable(disabled);
-        btnAssignTech.setDisable(disabled);
-        btnUpdateDiagnosis.setDisable(disabled);
-        btnAddParts.setDisable(disabled);
-        btnViewSummary.setDisable(disabled);
+    private void displayJobDetails(JobCard jc) {
+        if (jc == null) {
+            if (drawerEmptyState != null) drawerEmptyState.setVisible(true);
+            if (drawerContentState != null) drawerContentState.setVisible(false);
+            return;
+        }
 
-        if (jc != null) {
-            lblSelectedJobSummary.setText(String.format("Selected: Job #%d (%s - %s) | Status: %s",
-                    jc.getJobId(), jc.getCustomer().getName(), jc.getDeviceDetails(), jc.getStatus()));
-        } else {
-            lblSelectedJobSummary.setText("Select a job card to manage status, assign technicians, or add parts.");
+        if (drawerEmptyState != null) drawerEmptyState.setVisible(false);
+        if (drawerContentState != null) drawerContentState.setVisible(true);
+
+        lblDrawerJobTitle.setText("Job #" + jc.getJobId());
+        lblDrawerStatusBadge.setText(jc.getStatus().name().replace("_", " "));
+        lblDrawerStatusBadge.getStyleClass().clear();
+        lblDrawerStatusBadge.getStyleClass().add("badge");
+        switch (jc.getStatus()) {
+            case INTAKE: lblDrawerStatusBadge.getStyleClass().add("badge-intake"); break;
+            case DIAGNOSIS: lblDrawerStatusBadge.getStyleClass().add("badge-diagnosis"); break;
+            case AWAITING_APPROVAL: lblDrawerStatusBadge.getStyleClass().add("badge-awaiting"); break;
+            case REPAIRING: lblDrawerStatusBadge.getStyleClass().add("badge-repairing"); break;
+            case QUALITY_CHECK: lblDrawerStatusBadge.getStyleClass().add("badge-quality"); break;
+            case READY: lblDrawerStatusBadge.getStyleClass().add("badge-ready"); break;
+            case COMPLETED: lblDrawerStatusBadge.getStyleClass().add("badge-completed"); break;
+            case CANCELLED: lblDrawerStatusBadge.getStyleClass().add("badge-cancelled"); break;
+        }
+
+        lblDrawerCustomer.setText(jc.getCustomer() != null ? jc.getCustomer().getName() + " (" + jc.getCustomer().getPhone() + ")" : "-");
+        lblDrawerDevice.setText(jc.getDeviceDetails());
+        lblDrawerSerial.setText(jc.getSerialNo());
+        lblDrawerTech.setText(jc.getAssignedTech() != null ? jc.getAssignedTech().getName() : "Unassigned");
+        lblDrawerComplaint.setText(jc.getComplaint() == null || jc.getComplaint().isBlank() ? "None recorded" : jc.getComplaint());
+        lblDrawerDiagnosis.setText(jc.getDiagnosis() == null || jc.getDiagnosis().isBlank() ? "Pending" : jc.getDiagnosis());
+        lblDrawerLabor.setText(String.format("$%.2f", jc.getLaborCharge()));
+        lblDrawerParts.setText(String.format("$%.2f", jc.getPartsTotal()));
+        lblDrawerTotal.setText(String.format("$%.2f", jc.calculateTotal()));
+
+        btnAdvanceStatus.setDisable(jc.getStatus() == JobCard.RepairStatus.COMPLETED || jc.getStatus() == JobCard.RepairStatus.CANCELLED);
+        if (btnGenerateInvoice != null) {
+            btnGenerateInvoice.setDisable(jc.getStatus() != JobCard.RepairStatus.READY && jc.getStatus() != JobCard.RepairStatus.COMPLETED);
         }
     }
 
@@ -193,14 +225,13 @@ public class JobCardsController {
         List<Technician> techs = techDAO.getAllTechnicians();
 
         if (customers.isEmpty()) {
-            Alert alert = new Alert(Alert.AlertType.WARNING, "No customers registered. Please create a customer first.", ButtonType.OK);
-            alert.showAndWait();
+            new Alert(Alert.AlertType.WARNING, "Register a customer before creating a job card.", ButtonType.OK).showAndWait();
             return;
         }
 
         Dialog<JobCard> dialog = new Dialog<>();
-        dialog.setTitle("New Job Card Intake");
-        dialog.setHeaderText("Register Device for Repair");
+        dialog.setTitle("New Job Card");
+        dialog.setHeaderText("Intake Device Details");
 
         DialogPane dialogPane = dialog.getDialogPane();
         dialogPane.getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
@@ -217,14 +248,14 @@ public class JobCardsController {
         cmbCustomer.getSelectionModel().selectFirst();
 
         TextField txtDevice = new TextField();
-        txtDevice.setPromptText("e.g. iPhone 13 Pro, Dell XPS 15");
+        txtDevice.setPromptText("Device model");
 
         TextField txtSerial = new TextField();
-        txtSerial.setPromptText("e.g. SN-892348A");
+        txtSerial.setPromptText("Serial number");
 
         TextArea txtComplaint = new TextArea();
-        txtComplaint.setPromptText("Describe the symptoms or fault reported by customer...");
-        txtComplaint.setPrefRowCount(3);
+        txtComplaint.setPromptText("Reported fault");
+        txtComplaint.setPrefRowCount(2);
 
         ComboBox<Technician> cmbTech = new ComboBox<>(FXCollections.observableArrayList(techs));
         cmbTech.setConverter(new StringConverter<Technician>() {
@@ -234,13 +265,13 @@ public class JobCardsController {
 
         grid.add(new Label("Customer:"), 0, 0);
         grid.add(cmbCustomer, 1, 0);
-        grid.add(new Label("Device Details:"), 0, 1);
+        grid.add(new Label("Device:"), 0, 1);
         grid.add(txtDevice, 1, 1);
-        grid.add(new Label("Serial Number:"), 0, 2);
+        grid.add(new Label("Serial No:"), 0, 2);
         grid.add(txtSerial, 1, 2);
-        grid.add(new Label("Fault Complaint:"), 0, 3);
+        grid.add(new Label("Complaint:"), 0, 3);
         grid.add(txtComplaint, 1, 3);
-        grid.add(new Label("Assign Tech (Optional):"), 0, 4);
+        grid.add(new Label("Technician:"), 0, 4);
         grid.add(cmbTech, 1, 4);
 
         dialogPane.setContent(grid);
@@ -280,16 +311,16 @@ public class JobCardsController {
                 getNextSuggestedStatus(selected.getStatus()),
                 JobCard.RepairStatus.values()
         );
-        dialog.setTitle("Advance Job Card Status");
-        dialog.setHeaderText("Current Status: " + selected.getStatus());
-        dialog.setContentText("Select new status state:");
+        dialog.setTitle("Update Status");
+        dialog.setHeaderText("Advance Job #" + selected.getJobId());
+        dialog.setContentText("Select new state:");
 
         Optional<JobCard.RepairStatus> result = dialog.showAndWait();
         result.ifPresent(newStatus -> {
             selected.updateStatus(newStatus);
             AppContext.getInstance().getJobCardDAO().updateJobCard(selected);
             tblJobCards.refresh();
-            updateActionButtons(selected);
+            displayJobDetails(selected);
         });
     }
 
@@ -319,14 +350,14 @@ public class JobCardsController {
         ChoiceDialog<Technician> dialog = new ChoiceDialog<>(techs.get(0), techs);
         dialog.setTitle("Assign Technician");
         dialog.setHeaderText("Assign specialist to Job #" + selected.getJobId());
-        dialog.setContentText("Choose Technician:");
+        dialog.setContentText("Technician:");
 
         Optional<Technician> result = dialog.showAndWait();
         result.ifPresent(tech -> {
             selected.assignTechnician(tech);
             AppContext.getInstance().getJobCardDAO().updateJobCard(selected);
             tblJobCards.refresh();
-            updateActionButtons(selected);
+            displayJobDetails(selected);
         });
     }
 
@@ -336,7 +367,7 @@ public class JobCardsController {
         if (selected == null) return;
 
         Dialog<ButtonType> dialog = new Dialog<>();
-        dialog.setTitle("Update Diagnosis & Labor");
+        dialog.setTitle("Diagnosis & Labor");
         dialog.setHeaderText("Job #" + selected.getJobId() + " — " + selected.getDeviceDetails());
 
         DialogPane pane = dialog.getDialogPane();
@@ -367,7 +398,7 @@ public class JobCardsController {
 
             AppContext.getInstance().getJobCardDAO().updateJobCard(selected);
             tblJobCards.refresh();
-            updateActionButtons(selected);
+            displayJobDetails(selected);
         }
     }
 
@@ -379,13 +410,13 @@ public class JobCardsController {
         InventoryDAO inventoryDAO = AppContext.getInstance().getInventoryDAO();
         List<Part> parts = inventoryDAO.getAllParts();
         if (parts.isEmpty()) {
-            new Alert(Alert.AlertType.INFORMATION, "No inventory parts available.", ButtonType.OK).showAndWait();
+            new Alert(Alert.AlertType.INFORMATION, "No parts in inventory catalogue.", ButtonType.OK).showAndWait();
             return;
         }
 
         Dialog<ButtonType> dialog = new Dialog<>();
-        dialog.setTitle("Add Part to Job");
-        dialog.setHeaderText("Consume Inventory Part for Job #" + selected.getJobId());
+        dialog.setTitle("Consume Inventory Part");
+        dialog.setHeaderText("Add Part to Job #" + selected.getJobId());
 
         DialogPane pane = dialog.getDialogPane();
         pane.getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
@@ -397,7 +428,7 @@ public class JobCardsController {
         ComboBox<Part> cmbPart = new ComboBox<>(FXCollections.observableArrayList(parts));
         cmbPart.setConverter(new StringConverter<Part>() {
             @Override public String toString(Part p) {
-                return p != null ? p.getPartName() + " (In Stock: " + p.getStockQuantity() + ", $" + p.getPrice() + ")" : "";
+                return p != null ? p.getPartName() + " (" + p.getStockQuantity() + " left, $" + p.getPrice() + ")" : "";
             }
             @Override public Part fromString(String string) { return null; }
         });
@@ -405,9 +436,9 @@ public class JobCardsController {
 
         Spinner<Integer> spnQty = new Spinner<>(1, 100, 1);
 
-        grid.add(new Label("Select Part:"), 0, 0);
+        grid.add(new Label("Part:"), 0, 0);
         grid.add(cmbPart, 1, 0);
-        grid.add(new Label("Quantity Used:"), 0, 1);
+        grid.add(new Label("Quantity:"), 0, 1);
         grid.add(spnQty, 1, 1);
 
         pane.setContent(grid);
@@ -422,31 +453,20 @@ public class JobCardsController {
                     AppContext.getInstance().getJobCardDAO().saveJobParts(selected);
                     inventoryDAO.updatePart(part);
                     tblJobCards.refresh();
-                    updateActionButtons(selected);
+                    displayJobDetails(selected);
                 } else {
-                    new Alert(Alert.AlertType.ERROR, "Insufficient stock for: " + part.getPartName(), ButtonType.OK).showAndWait();
+                    new Alert(Alert.AlertType.ERROR, "Insufficient stock for " + part.getPartName(), ButtonType.OK).showAndWait();
                 }
             }
         }
     }
 
     @FXML
-    private void handleViewSummary() {
+    private void handleGenerateInvoiceForJob() {
         JobCard selected = tblJobCards.getSelectionModel().getSelectedItem();
-        if (selected == null) return;
-
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Job Card Summary");
-        alert.setHeaderText("Full Specification: Job #" + selected.getJobId());
-
-        TextArea textArea = new TextArea(selected.toDisplayString());
-        textArea.setEditable(false);
-        textArea.setWrapText(false);
-        textArea.setPrefWidth(500);
-        textArea.setPrefHeight(350);
-
-        alert.getDialogPane().setContent(textArea);
-        alert.showAndWait();
+        if (selected != null) {
+            AppContext.getInstance().getMainLayoutController().navigateTo("Invoices");
+        }
     }
 
     @FXML
@@ -454,4 +474,3 @@ public class JobCardsController {
         loadJobCards();
     }
 }
-

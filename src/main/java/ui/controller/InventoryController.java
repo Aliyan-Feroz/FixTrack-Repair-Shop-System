@@ -1,6 +1,7 @@
 package ui.controller;
 
 import dao.InventoryDAO;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -15,6 +16,7 @@ import ui.context.AppContext;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 public class InventoryController {
 
@@ -77,6 +79,11 @@ public class InventoryController {
         });
 
         colStatus.setCellFactory(col -> new TableCell<Part, String>() {
+            private final Label badge = new Label();
+            {
+                badge.getStyleClass().add("badge");
+            }
+
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
@@ -84,8 +91,8 @@ public class InventoryController {
                     setText(null);
                     setGraphic(null);
                 } else {
-                    Label badge = new Label(item);
-                    badge.getStyleClass().add("badge");
+                    badge.setText(item);
+                    badge.getStyleClass().removeIf(c -> c.startsWith("badge-"));
                     if ("LOW STOCK".equals(item)) {
                         badge.getStyleClass().add("badge-low-stock");
                     } else {
@@ -124,23 +131,23 @@ public class InventoryController {
     }
 
     public void loadInventory() {
-        InventoryDAO dao = AppContext.getInstance().getInventoryDAO();
-        List<Part> parts = dao.getAllParts();
-        partList.setAll(parts);
-
-        if (!partList.isEmpty()) {
-            tblInventory.getSelectionModel().selectFirst();
-        } else {
-            btnRestock.setDisable(true);
-            btnEditPrice.setDisable(true);
-        }
+        CompletableFuture.supplyAsync(() -> AppContext.getInstance().getInventoryDAO().getAllParts())
+                .thenAccept(parts -> Platform.runLater(() -> {
+                    partList.setAll(parts);
+                    if (!partList.isEmpty()) {
+                        tblInventory.getSelectionModel().selectFirst();
+                    } else {
+                        btnRestock.setDisable(true);
+                        btnEditPrice.setDisable(true);
+                    }
+                }));
     }
 
     @FXML
     private void handleAddPart() {
         Dialog<Part> dialog = new Dialog<>();
-        dialog.setTitle("New Inventory Part");
-        dialog.setHeaderText("Add New Spare Part / Consumable");
+        dialog.setTitle("New Part");
+        dialog.setHeaderText("Add Item to Catalogue");
 
         DialogPane pane = dialog.getDialogPane();
         pane.getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
@@ -150,14 +157,14 @@ public class InventoryController {
         grid.setVgap(12);
 
         TextField txtName = new TextField();
-        txtName.setPromptText("e.g. iPhone 14 Battery 3200mAh");
+        txtName.setPromptText("Part description");
 
         TextField txtStock = new TextField("10");
         TextField txtPrice = new TextField("45.00");
 
-        grid.add(new Label("Part Name:"), 0, 0);
+        grid.add(new Label("Description:"), 0, 0);
         grid.add(txtName, 1, 0);
-        grid.add(new Label("Initial Stock:"), 0, 1);
+        grid.add(new Label("Initial Units:"), 0, 1);
         grid.add(txtStock, 1, 1);
         grid.add(new Label("Unit Price ($):"), 0, 2);
         grid.add(txtPrice, 1, 2);
@@ -191,9 +198,9 @@ public class InventoryController {
         if (selected == null) return;
 
         TextInputDialog dialog = new TextInputDialog("10");
-        dialog.setTitle("Restock Part");
+        dialog.setTitle("Restock Units");
         dialog.setHeaderText("Restock: " + selected.getPartName());
-        dialog.setContentText("Enter number of units to add:");
+        dialog.setContentText("Units to add:");
 
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(input -> {
@@ -205,7 +212,7 @@ public class InventoryController {
                     tblInventory.refresh();
                 }
             } catch (NumberFormatException e) {
-                new Alert(Alert.AlertType.ERROR, "Please enter a valid integer quantity.", ButtonType.OK).showAndWait();
+                new Alert(Alert.AlertType.ERROR, "Enter a valid integer quantity.", ButtonType.OK).showAndWait();
             }
         });
     }
@@ -216,9 +223,9 @@ public class InventoryController {
         if (selected == null) return;
 
         TextInputDialog dialog = new TextInputDialog(String.format("%.2f", selected.getPrice()));
-        dialog.setTitle("Update Part Price");
-        dialog.setHeaderText("Change unit selling price for: " + selected.getPartName());
-        dialog.setContentText("New Unit Price ($):");
+        dialog.setTitle("Update Price");
+        dialog.setHeaderText("Price for " + selected.getPartName());
+        dialog.setContentText("Unit Price ($):");
 
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(input -> {
@@ -230,7 +237,7 @@ public class InventoryController {
                     tblInventory.refresh();
                 }
             } catch (NumberFormatException e) {
-                new Alert(Alert.AlertType.ERROR, "Please enter a valid monetary amount.", ButtonType.OK).showAndWait();
+                new Alert(Alert.AlertType.ERROR, "Enter a valid price amount.", ButtonType.OK).showAndWait();
             }
         });
     }
@@ -240,4 +247,3 @@ public class InventoryController {
         loadInventory();
     }
 }
-

@@ -2,50 +2,69 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
 
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="ui.controller.InvoicesController"
       spacing="14" styleClass="view-container">
 
     <!-- Top Action Bar -->
-    <HBox spacing="14" alignment="CENTER_LEFT">
-        <TextField fx:id="txtSearch" promptText="🔍  Search by Invoice #, Job #, customer, device..." prefWidth="340" />
-
-        <HBox spacing="6" alignment="CENTER_LEFT">
-            <Label text="Payment Status:" styleClass="card-subtitle" />
-            <ComboBox fx:id="cmbPaymentFilter" prefWidth="150" />
+    <HBox spacing="12" alignment="CENTER_LEFT">
+        <HBox spacing="8" alignment="CENTER_LEFT" styleClass="bento-card" prefHeight="40">
+            <SVGPath content="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z M21 21l-4.35-4.35" styleClass="icon-svg" />
+            <TextField fx:id="txtSearch" promptText="Search Invoice #, Job #, customer..." prefWidth="280" styleClass="text-field" />
         </HBox>
 
-        <Button text="🔄 Refresh" onAction="#handleRefresh" styleClass="btn-secondary" />
+        <HBox spacing="6" alignment="CENTER_LEFT">
+            <Label text="Status" styleClass="bento-label" />
+            <ComboBox fx:id="cmbPaymentFilter" prefWidth="140" />
+        </HBox>
+
+        <Button text="Refresh" onAction="#handleRefresh" styleClass="btn-secondary">
+            <graphic>
+                <SVGPath content="M1 4v6h6 M3.51 15a9 9 0 1 0 2.13-9.36L1 10" styleClass="icon-svg" />
+            </graphic>
+        </Button>
 
         <Region HBox.hgrow="ALWAYS" />
 
-        <Button text="+ Generate Invoice" onAction="#handleGenerateInvoice" styleClass="btn-primary" />
+        <Button text="Generate Invoice" onAction="#handleGenerateInvoice" styleClass="btn-primary">
+            <graphic>
+                <SVGPath content="M12 5v14 M5 12h14" styleClass="icon-btn" />
+            </graphic>
+        </Button>
     </HBox>
 
     <!-- Table Container -->
-    <VBox spacing="10" VBox.vgrow="ALWAYS" styleClass="content-card">
+    <VBox spacing="12" VBox.vgrow="ALWAYS" styleClass="bento-card">
         <TableView fx:id="tblInvoices" VBox.vgrow="ALWAYS">
             <columns>
-                <TableColumn fx:id="colInvoiceId" text="Invoice #" prefWidth="80" />
-                <TableColumn fx:id="colJobId" text="Job #" prefWidth="70" />
+                <TableColumn fx:id="colInvoiceId" text="Invoice #" prefWidth="85" />
+                <TableColumn fx:id="colJobId" text="Job #" prefWidth="75" />
                 <TableColumn fx:id="colCustomer" text="Customer" prefWidth="180" />
                 <TableColumn fx:id="colDevice" text="Device" prefWidth="180" />
-                <TableColumn fx:id="colPartsTotal" text="Parts ($)" prefWidth="100" />
-                <TableColumn fx:id="colLabor" text="Labor ($)" prefWidth="100" />
-                <TableColumn fx:id="colDiscount" text="Discount ($)" prefWidth="100" />
-                <TableColumn fx:id="colGrandTotal" text="Grand Total ($)" prefWidth="120" />
-                <TableColumn fx:id="colPaymentStatus" text="Payment Status" prefWidth="140" />
+                <TableColumn fx:id="colPartsTotal" text="Parts" prefWidth="95" />
+                <TableColumn fx:id="colLabor" text="Labor" prefWidth="95" />
+                <TableColumn fx:id="colDiscount" text="Discount" prefWidth="90" />
+                <TableColumn fx:id="colGrandTotal" text="Grand Total" prefWidth="110" />
+                <TableColumn fx:id="colPaymentStatus" text="Payment" prefWidth="130" />
             </columns>
         </TableView>
 
         <!-- Selected Invoice Action Bar -->
-        <HBox spacing="12" alignment="CENTER_LEFT" styleClass="user-box">
-            <Label text="Actions for selected invoice:" styleClass="card-subtitle" />
-            <Button fx:id="btnProcessPayment" text="💳 Process Payment (Cash / Card)" onAction="#handleProcessPayment" styleClass="btn-primary" />
-            <Button fx:id="btnViewReceipt" text="📄 View / Print Official Receipt" onAction="#handleViewReceipt" styleClass="btn-outline" />
+        <HBox spacing="12" alignment="CENTER_LEFT" styleClass="user-snippet">
+            <Label text="Invoice Actions:" styleClass="bento-label" />
+            <Button fx:id="btnProcessPayment" text="Process Payment" onAction="#handleProcessPayment" styleClass="btn-primary">
+                <graphic>
+                    <SVGPath content="M2 6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6zm0 4h20 M6 15h4" styleClass="icon-btn" />
+                </graphic>
+            </Button>
+            <Button fx:id="btnViewReceipt" text="View Receipt" onAction="#handleViewReceipt" styleClass="btn-secondary">
+                <graphic>
+                    <SVGPath content="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6 M16 13H8 M16 17H8 M10 9H8" styleClass="icon-svg" />
+                </graphic>
+            </Button>
         </HBox>
     </VBox>
 
 </VBox>
-

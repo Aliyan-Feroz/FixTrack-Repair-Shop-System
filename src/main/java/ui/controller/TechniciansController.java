@@ -2,6 +2,7 @@ package ui.controller;
 
 import business.JobCard;
 import dao.TechnicianDAO;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -10,11 +11,13 @@ import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
 import model.Technician;
 import ui.context.AppContext;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 public class TechniciansController {
@@ -28,9 +31,12 @@ public class TechniciansController {
     @FXML private TableColumn<Technician, Integer> colActiveJobs;
     @FXML private TableColumn<Technician, String> colWorkloadStatus;
 
-    // Assigned Jobs side/bottom panel
+    // Contextual Detail Drawer
+    @FXML private VBox drawerEmptyState;
+    @FXML private VBox drawerContentState;
     @FXML private Label lblSelectedTechName;
     @FXML private Label lblSelectedTechSpecialty;
+    @FXML private Label lblSelectedTechActiveJobs;
     @FXML private TextArea txtAssignedJobs;
 
     private final ObservableList<Technician> techList = FXCollections.observableArrayList();
@@ -58,11 +64,16 @@ public class TechniciansController {
             String status;
             if (active == 0) status = "AVAILABLE";
             else if (active <= 2) status = "MODERATE";
-            else status = "HEAVY LOAD";
+            else status = "HEAVY";
             return new SimpleStringProperty(status);
         });
 
         colWorkloadStatus.setCellFactory(col -> new TableCell<Technician, String>() {
+            private final Label badge = new Label();
+            {
+                badge.getStyleClass().add("badge");
+            }
+
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
@@ -70,8 +81,8 @@ public class TechniciansController {
                     setText(null);
                     setGraphic(null);
                 } else {
-                    Label badge = new Label(item);
-                    badge.getStyleClass().add("badge");
+                    badge.setText(item);
+                    badge.getStyleClass().removeIf(c -> c.startsWith("badge-"));
                     if ("AVAILABLE".equals(item)) {
                         badge.getStyleClass().add("badge-completed");
                     } else if ("MODERATE".equals(item)) {
@@ -103,62 +114,60 @@ public class TechniciansController {
     }
 
     public void loadTechnicians() {
-        TechnicianDAO dao = AppContext.getInstance().getTechnicianDAO();
-        List<Technician> techs = dao.getAllTechnicians();
-        techList.setAll(techs);
-
-        if (!techList.isEmpty()) {
-            tblTechnicians.getSelectionModel().selectFirst();
-        } else {
-            displayTechnicianDetails(null);
-        }
+        CompletableFuture.supplyAsync(() -> AppContext.getInstance().getTechnicianDAO().getAllTechnicians())
+                .thenAccept(techs -> Platform.runLater(() -> {
+                    techList.setAll(techs);
+                    if (!techList.isEmpty()) {
+                        tblTechnicians.getSelectionModel().selectFirst();
+                    } else {
+                        displayTechnicianDetails(null);
+                    }
+                }));
     }
 
     private void displayTechnicianDetails(Technician t) {
         if (t == null) {
-            lblSelectedTechName.setText("No technician selected");
-            lblSelectedTechSpecialty.setText("-");
-            txtAssignedJobs.setText("Select a technician to inspect assigned repair tasks.");
+            if (drawerEmptyState != null) drawerEmptyState.setVisible(true);
+            if (drawerContentState != null) drawerContentState.setVisible(false);
             return;
         }
 
+        if (drawerEmptyState != null) drawerEmptyState.setVisible(false);
+        if (drawerContentState != null) drawerContentState.setVisible(true);
+
         lblSelectedTechName.setText(t.getName());
-        lblSelectedTechSpecialty.setText("Specialty: " + t.getSpecialty());
+        lblSelectedTechSpecialty.setText(t.getSpecialty());
+        lblSelectedTechActiveJobs.setText(String.valueOf(t.getActiveJobsCount()));
 
         List<JobCard> jobs = AppContext.getInstance().getJobCardDAO().getAllJobCards().stream()
                 .filter(j -> j.getAssignedTech() != null && j.getAssignedTech().getTechId() == t.getTechId())
                 .collect(Collectors.toList());
 
         StringBuilder sb = new StringBuilder();
-        sb.append("Technician ID: #").append(t.getTechId()).append("\n");
-        sb.append("Specialty: ").append(t.getSpecialty()).append("\n");
-        sb.append("Active Workload Count: ").append(t.getActiveJobsCount()).append("\n\n");
-        sb.append("── Assigned Repair Tasks (").append(jobs.size()).append(" total) ──\n");
-
         if (jobs.isEmpty()) {
-            sb.append("No job cards currently assigned to this technician.");
+            sb.append("No repair tasks assigned to this technician.");
         } else {
             for (JobCard job : jobs) {
-                sb.append(String.format("• Job #%-3d | %-20s | Status: %-15s | Labor: $%.2f%n",
+                sb.append(String.format("Job #%-3d  •  %-18s  •  %s  •  $%.2f%n",
                         job.getJobId(),
                         job.getDeviceDetails(),
                         job.getStatus(),
                         job.getLaborCharge()));
-                if (job.getDiagnosis() != null && !job.getDiagnosis().isEmpty()) {
-                    sb.append("   Diagnosis: ").append(job.getDiagnosis()).append("\n");
+                if (job.getDiagnosis() != null && !job.getDiagnosis().isBlank()) {
+                    sb.append("  Notes: ").append(job.getDiagnosis()).append("\n");
                 }
                 sb.append("\n");
             }
         }
 
-        txtAssignedJobs.setText(sb.toString());
+        txtAssignedJobs.setText(sb.toString().trim());
     }
 
     @FXML
     private void handleAddTechnician() {
         Dialog<Technician> dialog = new Dialog<>();
         dialog.setTitle("Add Technician");
-        dialog.setHeaderText("Register Specialist on Staff Roster");
+        dialog.setHeaderText("Register Specialist");
 
         DialogPane pane = dialog.getDialogPane();
         pane.getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
@@ -168,12 +177,12 @@ public class TechniciansController {
         grid.setVgap(12);
 
         TextField txtName = new TextField();
-        txtName.setPromptText("e.g. Marcus Vance");
+        txtName.setPromptText("Full name");
 
         TextField txtSpecialty = new TextField();
-        txtSpecialty.setPromptText("e.g. Micro-soldering & Logic Boards");
+        txtSpecialty.setPromptText("Technical specialty");
 
-        grid.add(new Label("Technician Name:"), 0, 0);
+        grid.add(new Label("Name:"), 0, 0);
         grid.add(txtName, 1, 0);
         grid.add(new Label("Specialty:"), 0, 1);
         grid.add(txtSpecialty, 1, 1);
@@ -203,4 +212,3 @@ public class TechniciansController {
         loadTechnicians();
     }
 }
-

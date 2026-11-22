@@ -2,64 +2,82 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
 
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="ui.controller.CustomersController"
       spacing="16" styleClass="view-container">
 
     <!-- Top Action Bar -->
-    <HBox spacing="14" alignment="CENTER_LEFT">
-        <TextField fx:id="txtSearch" promptText="🔍  Search by customer name, phone, or ID..." prefWidth="360" />
-        <Button text="🔄 Refresh" onAction="#handleRefresh" styleClass="btn-secondary" />
+    <HBox spacing="12" alignment="CENTER_LEFT">
+        <HBox spacing="8" alignment="CENTER_LEFT" styleClass="bento-card" prefHeight="40">
+            <SVGPath content="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z M21 21l-4.35-4.35" styleClass="icon-svg" />
+            <TextField fx:id="txtSearch" promptText="Search name, phone, or ID..." prefWidth="300" styleClass="text-field" />
+        </HBox>
+
+        <Button text="Refresh" onAction="#handleRefresh" styleClass="btn-secondary">
+            <graphic>
+                <SVGPath content="M1 4v6h6 M3.51 15a9 9 0 1 0 2.13-9.36L1 10" styleClass="icon-svg" />
+            </graphic>
+        </Button>
 
         <Region HBox.hgrow="ALWAYS" />
 
-        <Button text="+ Add Customer" onAction="#handleAddCustomer" styleClass="btn-primary" />
+        <Button text="Add Customer" onAction="#handleAddCustomer" styleClass="btn-primary">
+            <graphic>
+                <SVGPath content="M12 5v14 M5 12h14" styleClass="icon-btn" />
+            </graphic>
+        </Button>
     </HBox>
 
-    <!-- Main Content Area: Customers Table (Left) + Details Card (Right) -->
+    <!-- Content Area: TableView + Slide-Over Contextual Detail Drawer -->
     <HBox spacing="16" VBox.vgrow="ALWAYS">
-        <!-- Customers Table -->
-        <VBox spacing="10" HBox.hgrow="ALWAYS" styleClass="content-card">
-            <Label text="Customer Directory" styleClass="card-title" />
+        <!-- Customers TableView -->
+        <VBox spacing="10" HBox.hgrow="ALWAYS" styleClass="bento-card">
             <TableView fx:id="tblCustomers" VBox.vgrow="ALWAYS">
                 <columns>
-                    <TableColumn fx:id="colId" text="ID" prefWidth="60" />
-                    <TableColumn fx:id="colName" text="Customer Name" prefWidth="220" />
-                    <TableColumn fx:id="colPhone" text="Phone Number" prefWidth="180" />
-                    <TableColumn fx:id="colTotalJobs" text="Total Jobs" prefWidth="100" />
+                    <TableColumn fx:id="colId" text="ID" prefWidth="65" />
+                    <TableColumn fx:id="colName" text="Name" prefWidth="230" />
+                    <TableColumn fx:id="colPhone" text="Phone" prefWidth="180" />
+                    <TableColumn fx:id="colTotalJobs" text="Repairs" prefWidth="95" />
                 </columns>
             </TableView>
         </VBox>
 
-        <!-- Customer Repair History / Details Card -->
-        <VBox spacing="14" styleClass="content-card" prefWidth="420">
-            <Label text="Customer Profile &amp; Service History" styleClass="card-title" />
-
-            <!-- Profile Summary Box -->
-            <VBox spacing="8" styleClass="user-box">
-                <HBox spacing="10">
-                    <Label text="Name:" styleClass="card-subtitle" prefWidth="70" />
-                    <Label fx:id="lblDetailName" text="-" styleClass="user-name" />
-                </HBox>
-                <HBox spacing="10">
-                    <Label text="Phone:" styleClass="card-subtitle" prefWidth="70" />
-                    <Label fx:id="lblDetailPhone" text="-" styleClass="user-role" />
-                </HBox>
-                <HBox spacing="10">
-                    <Label text="Repairs:" styleClass="card-subtitle" prefWidth="70" />
-                    <Label fx:id="lblDetailTotalJobs" text="0" styleClass="kpi-title" />
-                </HBox>
+        <!-- Slide-Over Contextual Detail Drawer -->
+        <StackPane styleClass="detail-drawer" prefWidth="380">
+            <!-- Empty State Prompt -->
+            <VBox fx:id="drawerEmptyState" alignment="CENTER" spacing="12">
+                <SVGPath content="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" styleClass="icon-svg" scaleX="1.6" scaleY="1.6" />
+                <Label text="Select a customer to view history" styleClass="bento-label" />
             </VBox>
 
-            <Separator />
+            <!-- Populated State -->
+            <VBox fx:id="drawerContentState" spacing="14" visible="false">
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <VBox spacing="2">
+                        <Label fx:id="lblDetailName" text="Customer" styleClass="header-title" />
+                        <Label fx:id="lblDetailPhone" text="Phone" styleClass="bento-label" />
+                    </VBox>
+                    <Region HBox.hgrow="ALWAYS" />
+                    <HBox alignment="CENTER" spacing="4" styleClass="badge">
+                        <Label fx:id="lblDetailTotalJobs" text="0" styleClass="user-name" />
+                        <Label text="Repairs" styleClass="bento-label" />
+                    </HBox>
+                </HBox>
 
-            <Label text="Full Repair Log" styleClass="card-subtitle" />
-            <TextArea fx:id="txtRepairHistory" editable="false" wrapText="true" VBox.vgrow="ALWAYS" prefHeight="260" />
+                <Separator />
 
-            <Button fx:id="btnNewJobForCustomer" text="📋 Create Job Card for this Customer" onAction="#handleCreateJobForCustomer" maxWidth="Infinity" styleClass="btn-outline" />
-        </VBox>
+                <Label text="SERVICE HISTORY" styleClass="bento-label" />
+                <TextArea fx:id="txtRepairHistory" editable="false" wrapText="true" VBox.vgrow="ALWAYS" prefHeight="260" />
+
+                <Button fx:id="btnNewJobForCustomer" text="Create Job Card" onAction="#handleCreateJobForCustomer" maxWidth="Infinity" styleClass="btn-primary">
+                    <graphic>
+                        <SVGPath content="M12 5v14 M5 12h14" styleClass="icon-btn" />
+                    </graphic>
+                </Button>
+            </VBox>
+        </StackPane>
     </HBox>
 
 </VBox>
-

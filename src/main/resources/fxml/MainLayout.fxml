@@ -2,54 +2,88 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
 
 <BorderPane fx:id="mainRoot" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="ui.controller.MainLayoutController"
             styleClass="app-root">
 
-    <!-- Left Sidebar -->
+    <!-- Sleek Dark Sidebar (#060D12) -->
     <left>
-        <VBox styleClass="sidebar" prefWidth="240">
-            <!-- Brand Box -->
+        <VBox fx:id="sidebar" cache="true" cacheHint="SPEED" styleClass="sidebar" prefWidth="230">
+            <!-- Brand -->
             <VBox styleClass="brand-box">
                 <HBox spacing="8" alignment="CENTER_LEFT">
-                    <Label text="⚡" styleClass="brand-title" />
+                    <SVGPath content="M13 2L3 14h9l-1 8 10-12h-9l1-8z" styleClass="icon-brand" />
                     <Label text="FixTrack" styleClass="brand-title" />
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Label text="v1.0" styleClass="brand-badge" />
                 </HBox>
-                <Label text="REPAIR WORKSHOP SUITE" styleClass="brand-subtitle" />
             </VBox>
 
             <!-- User Status Snippet -->
-            <HBox styleClass="user-box">
-                <Label text="👤" styleClass="brand-subtitle" />
+            <HBox styleClass="user-snippet">
+                <SVGPath content="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" styleClass="icon-svg" />
                 <VBox spacing="1">
                     <Label fx:id="lblUserName" text="Admin" styleClass="user-name" />
-                    <Label text="Manager Access" styleClass="user-role" />
+                    <Label text="Online" styleClass="user-role" />
                 </VBox>
             </HBox>
 
-            <Separator />
-
-            <!-- Navigation Links -->
+            <!-- Navigation Links with Vector Icons -->
             <VBox spacing="4">
-                <Button fx:id="btnDashboard" text="📊   Dashboard" onAction="#handleNavDashboard" maxWidth="Infinity" styleClass="nav-btn" />
-                <Button fx:id="btnCustomers" text="👥   Customers" onAction="#handleNavCustomers" maxWidth="Infinity" styleClass="nav-btn" />
-                <Button fx:id="btnJobCards" text="📋   Job Cards" onAction="#handleNavJobCards" maxWidth="Infinity" styleClass="nav-btn" />
-                <Button fx:id="btnInventory" text="📦   Inventory" onAction="#handleNavInventory" maxWidth="Infinity" styleClass="nav-btn" />
-                <Button fx:id="btnTechnicians" text="🔧   Technicians" onAction="#handleNavTechnicians" maxWidth="Infinity" styleClass="nav-btn" />
-                <Button fx:id="btnInvoices" text="💳   Invoicing &amp; Billing" onAction="#handleNavInvoices" maxWidth="Infinity" styleClass="nav-btn" />
-                <Button fx:id="btnReports" text="📈   System Reports" onAction="#handleNavReports" maxWidth="Infinity" styleClass="nav-btn" />
+                <Button fx:id="btnDashboard" text="Dashboard" onAction="#handleNavDashboard" maxWidth="Infinity" styleClass="nav-btn">
+                    <graphic>
+                        <SVGPath content="M3 3h7v7H3zm11 0h7v7h-7zm0 11h7v7h-7zM3 14h7v7H3z" styleClass="icon-svg" />
+                    </graphic>
+                </Button>
+                <Button fx:id="btnCustomers" text="Customers" onAction="#handleNavCustomers" maxWidth="Infinity" styleClass="nav-btn">
+                    <graphic>
+                        <SVGPath content="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M22 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75" styleClass="icon-svg" />
+                    </graphic>
+                </Button>
+                <Button fx:id="btnJobCards" text="Job Cards" onAction="#handleNavJobCards" maxWidth="Infinity" styleClass="nav-btn">
+                    <graphic>
+                        <SVGPath content="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2 M9 2h6a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z M9 12h6 M9 16h6" styleClass="icon-svg" />
+                    </graphic>
+                </Button>
+                <Button fx:id="btnInventory" text="Inventory" onAction="#handleNavInventory" maxWidth="Infinity" styleClass="nav-btn">
+                    <graphic>
+                        <SVGPath content="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z M3.27 6.96L12 12.01l8.73-5.05 M12 22.08V12" styleClass="icon-svg" />
+                    </graphic>
+                </Button>
+                <Button fx:id="btnTechnicians" text="Technicians" onAction="#handleNavTechnicians" maxWidth="Infinity" styleClass="nav-btn">
+                    <graphic>
+                        <SVGPath content="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" styleClass="icon-svg" />
+                    </graphic>
+                </Button>
+                <Button fx:id="btnInvoices" text="Invoicing" onAction="#handleNavInvoices" maxWidth="Infinity" styleClass="nav-btn">
+                    <graphic>
+                        <SVGPath content="M2 6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6zm0 4h20 M6 15h4" styleClass="icon-svg" />
+                    </graphic>
+                </Button>
+                <Button fx:id="btnReports" text="Reports" onAction="#handleNavReports" maxWidth="Infinity" styleClass="nav-btn">
+                    <graphic>
+                        <SVGPath content="M18 20V10 M12 20V4 M6 20v-6" styleClass="icon-svg" />
+                    </graphic>
+                </Button>
             </VBox>
 
             <!-- Spacer -->
             <Region VBox.vgrow="ALWAYS" />
 
-            <Separator />
-
             <!-- Bottom Actions -->
-            <VBox spacing="6">
-                <Button fx:id="btnThemeToggle" text="☀️  Light Mode" onAction="#handleThemeToggle" maxWidth="Infinity" styleClass="nav-btn" />
-                <Button fx:id="btnLogout" text="🚪  Logout" onAction="#handleLogout" maxWidth="Infinity" styleClass="nav-btn,nav-btn-danger" />
+            <VBox spacing="4">
+                <Button fx:id="btnThemeToggle" text="Light Mode" onAction="#handleThemeToggle" maxWidth="Infinity" styleClass="nav-btn">
+                    <graphic>
+                        <SVGPath content="M12 1v2 M12 21v2 M4.22 4.22l1.42 1.42 M18.36 18.36l1.42 1.42 M1 12h2 M21 12h2 M4.22 19.78l1.42-1.42 M18.36 5.64l1.42-1.42 M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10z" styleClass="icon-svg" />
+                    </graphic>
+                </Button>
+                <Button fx:id="btnLogout" text="Logout" onAction="#handleLogout" maxWidth="Infinity" styleClass="nav-btn,nav-btn-danger">
+                    <graphic>
+                        <SVGPath content="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4 M16 17l5-5-5-5 M21 12H9" styleClass="icon-svg" />
+                    </graphic>
+                </Button>
             </VBox>
         </VBox>
     </left>
@@ -57,24 +91,23 @@
     <!-- Top Header Bar -->
     <top>
         <HBox styleClass="header-bar" spacing="16">
-            <VBox spacing="2">
-                <Label fx:id="viewTitleLabel" text="Dashboard Overview" styleClass="header-title" />
-                <Label fx:id="viewSubtitleLabel" text="Live operational status and shop overview" styleClass="card-subtitle" />
-            </VBox>
+            <Label fx:id="viewTitleLabel" text="Dashboard" styleClass="header-title" />
 
             <Region HBox.hgrow="ALWAYS" />
 
-            <HBox spacing="12" alignment="CENTER_RIGHT">
-                <Label fx:id="lblCurrentDate" text="Date" styleClass="card-subtitle" />
-                <Label text="● Database Connected" styleClass="header-status-badge" />
+            <HBox spacing="14" alignment="CENTER_RIGHT">
+                <Label fx:id="lblCurrentDate" text="Date" styleClass="bento-label" />
+                <HBox spacing="6" alignment="CENTER_LEFT" styleClass="status-badge">
+                    <Circle radius="3.5" fill="#10B981" />
+                    <Label text="Live DB" styleClass="live-db-text" />
+                </HBox>
             </HBox>
         </HBox>
     </top>
 
-    <!-- Center Swappable Content Area -->
+    <!-- Center Content -->
     <center>
         <StackPane fx:id="contentArea" styleClass="app-root" />
     </center>
 
 </BorderPane>
-

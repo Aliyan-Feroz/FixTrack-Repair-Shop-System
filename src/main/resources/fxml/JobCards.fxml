@@ -2,6 +2,7 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
 
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="ui.controller.JobCardsController"
@@ -9,50 +10,127 @@
 
     <!-- Filter & Action Bar -->
     <HBox spacing="12" alignment="CENTER_LEFT">
-        <TextField fx:id="txtSearch" promptText="🔍  Search by Job #, customer, device, serial..." prefWidth="320" />
-
-        <HBox spacing="6" alignment="CENTER_LEFT">
-            <Label text="Status:" styleClass="card-subtitle" />
-            <ComboBox fx:id="cmbStatusFilter" prefWidth="160" />
+        <HBox spacing="8" alignment="CENTER_LEFT" styleClass="bento-card" prefHeight="40">
+            <SVGPath content="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z M21 21l-4.35-4.35" styleClass="icon-svg" />
+            <TextField fx:id="txtSearch" promptText="Search Job #, customer, device, serial..." prefWidth="280" styleClass="text-field" />
         </HBox>
 
-        <Button text="🔄 Refresh" onAction="#handleRefresh" styleClass="btn-secondary" />
+        <HBox spacing="6" alignment="CENTER_LEFT">
+            <Label text="Status" styleClass="bento-label" />
+            <ComboBox fx:id="cmbStatusFilter" prefWidth="150" />
+        </HBox>
+
+        <Button text="Refresh" onAction="#handleRefresh" styleClass="btn-secondary">
+            <graphic>
+                <SVGPath content="M1 4v6h6 M3.51 15a9 9 0 1 0 2.13-9.36L1 10" styleClass="icon-svg" />
+            </graphic>
+        </Button>
 
         <Region HBox.hgrow="ALWAYS" />
 
-        <Button text="+ New Job Card" onAction="#handleNewJobCard" styleClass="btn-primary" />
+        <Button text="New Job Card" onAction="#handleNewJobCard" styleClass="btn-primary">
+            <graphic>
+                <SVGPath content="M12 5v14 M5 12h14" styleClass="icon-btn" />
+            </graphic>
+        </Button>
     </HBox>
 
-    <!-- Job Cards Table -->
-    <VBox spacing="10" VBox.vgrow="ALWAYS" styleClass="content-card">
-        <TableView fx:id="tblJobCards" VBox.vgrow="ALWAYS">
-            <columns>
-                <TableColumn fx:id="colJobId" text="Job #" prefWidth="65" />
-                <TableColumn fx:id="colCustomer" text="Customer" prefWidth="150" />
-                <TableColumn fx:id="colDevice" text="Device" prefWidth="160" />
-                <TableColumn fx:id="colSerial" text="Serial Number" prefWidth="130" />
-                <TableColumn fx:id="colTech" text="Assigned Tech" prefWidth="130" />
-                <TableColumn fx:id="colStatus" text="Repair Status" prefWidth="140" />
-                <TableColumn fx:id="colLabor" text="Labor ($)" prefWidth="85" />
-                <TableColumn fx:id="colPartsTotal" text="Parts ($)" prefWidth="85" />
-                <TableColumn fx:id="colGrandTotal" text="Total ($)" prefWidth="90" />
-                <TableColumn fx:id="colDate" text="Date Logged" prefWidth="130" />
-            </columns>
-        </TableView>
-
-        <!-- Dynamic Action Bar for Selected Job Card -->
-        <VBox spacing="8" styleClass="user-box">
-            <Label fx:id="lblSelectedJobSummary" text="Select a job card to manage status, assign technicians, or add parts." styleClass="card-subtitle" />
-
-            <HBox spacing="10" alignment="CENTER_LEFT">
-                <Button fx:id="btnAdvanceStatus" text="⏩ Advance Status" onAction="#handleAdvanceStatus" styleClass="btn-primary" />
-                <Button fx:id="btnAssignTech" text="🔧 Assign Tech" onAction="#handleAssignTech" styleClass="btn-secondary" />
-                <Button fx:id="btnUpdateDiagnosis" text="📝 Diagnosis &amp; Labor" onAction="#handleUpdateDiagnosis" styleClass="btn-secondary" />
-                <Button fx:id="btnAddParts" text="📦 Add Parts" onAction="#handleAddParts" styleClass="btn-secondary" />
-                <Button fx:id="btnViewSummary" text="📄 View Summary" onAction="#handleViewSummary" styleClass="btn-outline" />
-            </HBox>
+    <!-- Main Content Area: TableView + Slide-Over Detail Drawer -->
+    <HBox spacing="16" VBox.vgrow="ALWAYS">
+        <!-- Job Cards TableView -->
+        <VBox spacing="10" HBox.hgrow="ALWAYS" styleClass="bento-card">
+            <TableView fx:id="tblJobCards" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="colJobId" text="Job #" prefWidth="65" />
+                    <TableColumn fx:id="colCustomer" text="Customer" prefWidth="135" />
+                    <TableColumn fx:id="colDevice" text="Device" prefWidth="145" />
+                    <TableColumn fx:id="colSerial" text="Serial" prefWidth="110" />
+                    <TableColumn fx:id="colTech" text="Technician" prefWidth="120" />
+                    <TableColumn fx:id="colStatus" text="Status" prefWidth="155" />
+                    <TableColumn fx:id="colGrandTotal" text="Total" prefWidth="90" />
+                    <TableColumn fx:id="colDate" text="Logged" prefWidth="105" />
+                </columns>
+            </TableView>
         </VBox>
-    </VBox>
+
+        <!-- Slide-Over Contextual Detail Drawer -->
+        <StackPane styleClass="detail-drawer" prefWidth="380">
+            <!-- Empty State Prompt -->
+            <VBox fx:id="drawerEmptyState" alignment="CENTER" spacing="12">
+                <SVGPath content="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2 M9 2h6a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z" styleClass="icon-svg" scaleX="1.6" scaleY="1.6" />
+                <Label text="Select a job card to manage repair" styleClass="bento-label" />
+            </VBox>
+
+            <!-- Populated State -->
+            <VBox fx:id="drawerContentState" spacing="12" visible="false">
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <Label fx:id="lblDrawerJobTitle" text="Job #0" styleClass="header-title" />
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Label fx:id="lblDrawerStatusBadge" text="STATUS" styleClass="badge" />
+                </HBox>
+
+                <!-- Spec Grid -->
+                <VBox spacing="6" styleClass="user-snippet">
+                    <HBox spacing="8">
+                        <Label text="Customer:" styleClass="bento-label" prefWidth="70" />
+                        <Label fx:id="lblDrawerCustomer" text="-" styleClass="user-name" />
+                    </HBox>
+                    <HBox spacing="8">
+                        <Label text="Device:" styleClass="bento-label" prefWidth="70" />
+                        <Label fx:id="lblDrawerDevice" text="-" styleClass="user-name" />
+                    </HBox>
+                    <HBox spacing="8">
+                        <Label text="Serial:" styleClass="bento-label" prefWidth="70" />
+                        <Label fx:id="lblDrawerSerial" text="-" styleClass="bento-label" />
+                    </HBox>
+                    <HBox spacing="8">
+                        <Label text="Technician:" styleClass="bento-label" prefWidth="70" />
+                        <Label fx:id="lblDrawerTech" text="-" styleClass="user-role" />
+                    </HBox>
+                </VBox>
+
+                <!-- Diagnosis & Complaint -->
+                <VBox spacing="4">
+                    <Label text="COMPLAINT" styleClass="bento-label" />
+                    <Label fx:id="lblDrawerComplaint" text="None" wrapText="true" styleClass="bento-label" />
+                </VBox>
+                <VBox spacing="4">
+                    <Label text="DIAGNOSIS" styleClass="bento-label" />
+                    <Label fx:id="lblDrawerDiagnosis" text="Pending" wrapText="true" styleClass="user-name" />
+                </VBox>
+
+                <!-- Financial Row -->
+                <HBox spacing="10" alignment="CENTER_LEFT" styleClass="bento-card">
+                    <VBox spacing="2" HBox.hgrow="ALWAYS">
+                        <Label text="LABOR" styleClass="bento-label" />
+                        <Label fx:id="lblDrawerLabor" text="\$0.00" styleClass="user-name" />
+                    </VBox>
+                    <VBox spacing="2" HBox.hgrow="ALWAYS">
+                        <Label text="PARTS" styleClass="bento-label" />
+                        <Label fx:id="lblDrawerParts" text="\$0.00" styleClass="user-name" />
+                    </VBox>
+                    <VBox spacing="2" HBox.hgrow="ALWAYS">
+                        <Label text="TOTAL" styleClass="bento-label" />
+                        <Label fx:id="lblDrawerTotal" text="\$0.00" styleClass="header-title" />
+                    </VBox>
+                </HBox>
+
+                <Separator />
+
+                <!-- Direct Action Buttons -->
+                <VBox spacing="8">
+                    <HBox spacing="8">
+                        <Button fx:id="btnAdvanceStatus" text="Advance Status" onAction="#handleAdvanceStatus" maxWidth="Infinity" HBox.hgrow="ALWAYS" styleClass="btn-primary" />
+                        <Button fx:id="btnAssignTech" text="Assign Tech" onAction="#handleAssignTech" maxWidth="Infinity" HBox.hgrow="ALWAYS" styleClass="btn-secondary" />
+                    </HBox>
+                    <HBox spacing="8">
+                        <Button fx:id="btnUpdateDiagnosis" text="Diagnosis &amp; Labor" onAction="#handleUpdateDiagnosis" maxWidth="Infinity" HBox.hgrow="ALWAYS" styleClass="btn-secondary" />
+                        <Button fx:id="btnAddParts" text="Add Parts" onAction="#handleAddParts" maxWidth="Infinity" HBox.hgrow="ALWAYS" styleClass="btn-secondary" />
+                    </HBox>
+                    <Button fx:id="btnGenerateInvoice" text="Generate Invoice" onAction="#handleGenerateInvoiceForJob" maxWidth="Infinity" styleClass="btn-outline" />
+                </VBox>
+            </VBox>
+        </StackPane>
+    </HBox>
 
 </VBox>
-

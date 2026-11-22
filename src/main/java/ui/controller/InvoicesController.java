@@ -4,6 +4,7 @@ import business.Invoice;
 import business.JobCard;
 import dao.InvoiceDAO;
 import dao.JobCardDAO;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -13,12 +14,12 @@ import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
 import ui.context.AppContext;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 public class InvoicesController {
@@ -71,14 +72,17 @@ public class InvoicesController {
         colGrandTotal.setCellValueFactory(data -> new SimpleDoubleProperty(data.getValue().getGrandTotal()).asObject());
         colPaymentStatus.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getPaymentStatus().name()));
 
-        // Format currency columns
         colPartsTotal.setCellFactory(col -> formatCurrencyCell());
         colLabor.setCellFactory(col -> formatCurrencyCell());
         colDiscount.setCellFactory(col -> formatCurrencyCell());
         colGrandTotal.setCellFactory(col -> formatCurrencyCell());
 
-        // Status badges
         colPaymentStatus.setCellFactory(col -> new TableCell<Invoice, String>() {
+            private final Label badge = new Label();
+            {
+                badge.getStyleClass().add("badge");
+            }
+
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
@@ -86,8 +90,8 @@ public class InvoicesController {
                     setText(null);
                     setGraphic(null);
                 } else {
-                    Label badge = new Label(item.replace("_", " "));
-                    badge.getStyleClass().add("badge");
+                    badge.setText(item.replace("_", " "));
+                    badge.getStyleClass().removeIf(c -> c.startsWith("badge-"));
                     switch (item) {
                         case "PENDING":
                             badge.getStyleClass().add("badge-pending");
@@ -153,16 +157,16 @@ public class InvoicesController {
     }
 
     public void loadInvoices() {
-        InvoiceDAO dao = AppContext.getInstance().getInvoiceDAO();
-        List<Invoice> list = dao.getAllInvoices();
-        invoiceList.setAll(list);
-
-        if (!invoiceList.isEmpty()) {
-            tblInvoices.getSelectionModel().selectFirst();
-        } else {
-            btnProcessPayment.setDisable(true);
-            btnViewReceipt.setDisable(true);
-        }
+        CompletableFuture.supplyAsync(() -> AppContext.getInstance().getInvoiceDAO().getAllInvoices())
+                .thenAccept(list -> Platform.runLater(() -> {
+                    invoiceList.setAll(list);
+                    if (!invoiceList.isEmpty()) {
+                        tblInvoices.getSelectionModel().selectFirst();
+                    } else {
+                        btnProcessPayment.setDisable(true);
+                        btnViewReceipt.setDisable(true);
+                    }
+                }));
     }
 
     @FXML
@@ -170,19 +174,18 @@ public class InvoicesController {
         JobCardDAO jobCardDAO = AppContext.getInstance().getJobCardDAO();
         InvoiceDAO invoiceDAO = AppContext.getInstance().getInvoiceDAO();
 
-        // Find job cards that do not yet have an invoice
         List<JobCard> unbilledJobs = jobCardDAO.getAllJobCards().stream()
                 .filter(j -> !invoiceDAO.existsForJob(j.getJobId()))
                 .collect(Collectors.toList());
 
         if (unbilledJobs.isEmpty()) {
-            new Alert(Alert.AlertType.INFORMATION, "All current job cards already have invoices generated.", ButtonType.OK).showAndWait();
+            new Alert(Alert.AlertType.INFORMATION, "All existing job cards have invoices generated.", ButtonType.OK).showAndWait();
             return;
         }
 
         Dialog<Invoice> dialog = new Dialog<>();
-        dialog.setTitle("Generate Customer Invoice");
-        dialog.setHeaderText("Create Billing Statement for Job Card");
+        dialog.setTitle("Generate Invoice");
+        dialog.setHeaderText("Create Billing Record");
 
         DialogPane pane = dialog.getDialogPane();
         pane.getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
@@ -194,7 +197,7 @@ public class InvoicesController {
         ComboBox<JobCard> cmbJob = new ComboBox<>(FXCollections.observableArrayList(unbilledJobs));
         cmbJob.setConverter(new StringConverter<JobCard>() {
             @Override public String toString(JobCard j) {
-                return j != null ? "Job #" + j.getJobId() + " (" + j.getCustomer().getName() + " - " + j.getDeviceDetails() + ")" : "";
+                return j != null ? "Job #" + j.getJobId() + " — " + j.getCustomer().getName() + " (" + j.getDeviceDetails() + ")" : "";
             }
             @Override public JobCard fromString(String string) { return null; }
         });
@@ -204,13 +207,13 @@ public class InvoicesController {
         lblSubtotal.getStyleClass().add("user-name");
         TextField txtDiscount = new TextField("0.00");
         Label lblGrandTotalPreview = new Label("$0.00");
-        lblGrandTotalPreview.getStyleClass().add("brand-title");
+        lblGrandTotalPreview.getStyleClass().add("header-title");
 
         Runnable updateTotals = () -> {
             JobCard jc = cmbJob.getValue();
             if (jc != null) {
                 double subtotal = jc.getLaborCharge() + jc.getPartsTotal();
-                lblSubtotal.setText(String.format("$%.2f (Parts: $%.2f, Labor: $%.2f)", subtotal, jc.getPartsTotal(), jc.getLaborCharge()));
+                lblSubtotal.setText(String.format("$%.2f", subtotal));
                 try {
                     double disc = Double.parseDouble(txtDiscount.getText().trim());
                     double grand = Math.max(0, subtotal - disc);
@@ -225,13 +228,13 @@ public class InvoicesController {
         txtDiscount.textProperty().addListener((obs, o, n) -> updateTotals.run());
         updateTotals.run();
 
-        grid.add(new Label("Select Job Card:"), 0, 0);
+        grid.add(new Label("Job Card:"), 0, 0);
         grid.add(cmbJob, 1, 0);
-        grid.add(new Label("Repair Subtotal:"), 0, 1);
+        grid.add(new Label("Subtotal:"), 0, 1);
         grid.add(lblSubtotal, 1, 1);
         grid.add(new Label("Discount ($):"), 0, 2);
         grid.add(txtDiscount, 1, 2);
-        grid.add(new Label("Final Grand Total:"), 0, 3);
+        grid.add(new Label("Grand Total:"), 0, 3);
         grid.add(lblGrandTotalPreview, 1, 3);
 
         pane.setContent(grid);
@@ -263,10 +266,10 @@ public class InvoicesController {
         Invoice selected = tblInvoices.getSelectionModel().getSelectedItem();
         if (selected == null || selected.getPaymentStatus() != Invoice.PaymentStatus.PENDING) return;
 
-        ChoiceDialog<String> dialog = new ChoiceDialog<>("Cash", "Cash", "Credit / Debit Card");
-        dialog.setTitle("Process Invoice Payment");
-        dialog.setHeaderText("Settling Invoice #" + selected.getInvoiceId() + " (Amount: $" + String.format("%.2f", selected.getGrandTotal()) + ")");
-        dialog.setContentText("Select Payment Tender:");
+        ChoiceDialog<String> dialog = new ChoiceDialog<>("Cash", "Cash", "Card");
+        dialog.setTitle("Process Payment");
+        dialog.setHeaderText("Invoice #" + selected.getInvoiceId() + "  •  $" + String.format("%.2f", selected.getGrandTotal()));
+        dialog.setContentText("Payment Method:");
 
         Optional<String> res = dialog.showAndWait();
         res.ifPresent(method -> {
@@ -277,13 +280,6 @@ public class InvoicesController {
                 AppContext.getInstance().getJobCardDAO().updateJobCard(selected.getJobCard());
                 tblInvoices.refresh();
                 btnProcessPayment.setDisable(true);
-
-                Alert info = new Alert(Alert.AlertType.INFORMATION,
-                        String.format("Payment of $%.2f received via %s. Job #%d moved to COMPLETED.",
-                                selected.getGrandTotal(), method, selected.getJobCard().getJobId()),
-                        ButtonType.OK);
-                info.setHeaderText("Payment Successful!");
-                info.showAndWait();
             }
         });
     }
@@ -294,39 +290,30 @@ public class InvoicesController {
         if (selected == null) return;
 
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Customer Invoice Receipt");
-        alert.setHeaderText("Official Receipt — Invoice #" + selected.getInvoiceId());
+        alert.setTitle("Invoice Receipt");
+        alert.setHeaderText("Invoice #" + selected.getInvoiceId());
 
         StringBuilder sb = new StringBuilder();
-        sb.append("╔═══════════════════════════════════════════════════╗\n");
-        sb.append("║          REPAIR SHOP — INVOICE RECEIPT           ║\n");
-        sb.append("╠═══════════════════════════════════════════════════╣\n");
-        sb.append(String.format("║  Invoice #  : %-35d║%n", selected.getInvoiceId()));
+        sb.append(String.format("Invoice ID   : #%d%n", selected.getInvoiceId()));
         if (selected.getJobCard() != null) {
-            sb.append(String.format("║  Job Card # : %-35d║%n", selected.getJobCard().getJobId()));
+            sb.append(String.format("Job Card     : #%d%n", selected.getJobCard().getJobId()));
             if (selected.getJobCard().getCustomer() != null) {
-                sb.append(String.format("║  Customer   : %-35s║%n", selected.getJobCard().getCustomer().getName()));
-                sb.append(String.format("║  Phone      : %-35s║%n", selected.getJobCard().getCustomer().getPhone()));
+                sb.append(String.format("Customer     : %s (%s)%n", selected.getJobCard().getCustomer().getName(), selected.getJobCard().getCustomer().getPhone()));
             }
-            sb.append(String.format("║  Device     : %-35s║%n", selected.getJobCard().getDeviceDetails()));
+            sb.append(String.format("Device       : %s%n", selected.getJobCard().getDeviceDetails()));
         }
-        sb.append("╠═══════════════════════════════════════════════════╣\n");
-        sb.append("║                  BILLING SUMMARY                 ║\n");
-        sb.append("╠═══════════════════════════════════════════════════╣\n");
-        sb.append(String.format("║  Parts Total : %33s║%n", String.format("$%.2f", selected.getPartsTotal())));
-        sb.append(String.format("║  Labour      : %33s║%n", String.format("$%.2f", selected.getLaborCharge())));
-        sb.append(String.format("║  Subtotal    : %33s║%n", String.format("$%.2f", selected.getLaborCharge() + selected.getPartsTotal())));
-        sb.append(String.format("║  Discount    : %33s║%n", String.format("-$%.2f", selected.getDiscount())));
-        sb.append("╠═══════════════════════════════════════════════════╣\n");
-        sb.append(String.format("║  GRAND TOTAL : %33s║%n", String.format("$%.2f", selected.getGrandTotal())));
-        sb.append(String.format("║  Status      : %-35s║%n", selected.getPaymentStatus()));
-        sb.append("╚═══════════════════════════════════════════════════╝\n");
+        sb.append("──────────────────────────────────────────\n");
+        sb.append(String.format("Parts Total  : $%.2f%n", selected.getPartsTotal()));
+        sb.append(String.format("Labor Charge : $%.2f%n", selected.getLaborCharge()));
+        sb.append(String.format("Discount     : -$%.2f%n", selected.getDiscount()));
+        sb.append("──────────────────────────────────────────\n");
+        sb.append(String.format("Grand Total  : $%.2f%n", selected.getGrandTotal()));
+        sb.append(String.format("Status       : %s%n", selected.getPaymentStatus()));
 
         TextArea textArea = new TextArea(sb.toString());
         textArea.setEditable(false);
-        textArea.setWrapText(false);
-        textArea.setPrefWidth(480);
-        textArea.setPrefHeight(360);
+        textArea.setPrefWidth(420);
+        textArea.setPrefHeight(260);
 
         alert.getDialogPane().setContent(textArea);
         alert.showAndWait();
@@ -337,4 +324,3 @@ public class InvoicesController {
         loadInvoices();
     }
 }
-

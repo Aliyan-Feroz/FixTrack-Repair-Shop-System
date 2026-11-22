@@ -2,42 +2,63 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
 
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="ui.controller.InventoryController"
       spacing="14" styleClass="view-container">
 
     <!-- Top Action Bar -->
-    <HBox spacing="14" alignment="CENTER_LEFT">
-        <TextField fx:id="txtSearch" promptText="🔍  Search parts by name or ID..." prefWidth="320" />
-        <CheckBox fx:id="chkLowStockOnly" text="Show Low Stock Only (≤ 5 units)" />
-        <Button text="🔄 Refresh" onAction="#handleRefresh" styleClass="btn-secondary" />
+    <HBox spacing="12" alignment="CENTER_LEFT">
+        <HBox spacing="8" alignment="CENTER_LEFT" styleClass="bento-card" prefHeight="40">
+            <SVGPath content="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z M21 21l-4.35-4.35" styleClass="icon-svg" />
+            <TextField fx:id="txtSearch" promptText="Search parts catalogue..." prefWidth="280" styleClass="text-field" />
+        </HBox>
+
+        <CheckBox fx:id="chkLowStockOnly" text="Low Stock Only (≤ 5 units)" />
+
+        <Button text="Refresh" onAction="#handleRefresh" styleClass="btn-secondary">
+            <graphic>
+                <SVGPath content="M1 4v6h6 M3.51 15a9 9 0 1 0 2.13-9.36L1 10" styleClass="icon-svg" />
+            </graphic>
+        </Button>
 
         <Region HBox.hgrow="ALWAYS" />
 
-        <Button text="+ Add New Part" onAction="#handleAddPart" styleClass="btn-primary" />
+        <Button text="Add Part" onAction="#handleAddPart" styleClass="btn-primary">
+            <graphic>
+                <SVGPath content="M12 5v14 M5 12h14" styleClass="icon-btn" />
+            </graphic>
+        </Button>
     </HBox>
 
     <!-- Table Container -->
-    <VBox spacing="10" VBox.vgrow="ALWAYS" styleClass="content-card">
+    <VBox spacing="12" VBox.vgrow="ALWAYS" styleClass="bento-card">
         <TableView fx:id="tblInventory" VBox.vgrow="ALWAYS">
             <columns>
-                <TableColumn fx:id="colPartId" text="Part ID" prefWidth="70" />
-                <TableColumn fx:id="colPartName" text="Part Description / Item" prefWidth="280" />
+                <TableColumn fx:id="colPartId" text="ID" prefWidth="65" />
+                <TableColumn fx:id="colPartName" text="Part Description" prefWidth="280" />
                 <TableColumn fx:id="colStock" text="Available Stock" prefWidth="120" />
-                <TableColumn fx:id="colPrice" text="Unit Price ($)" prefWidth="120" />
-                <TableColumn fx:id="colTotalValue" text="Total Asset Value ($)" prefWidth="150" />
-                <TableColumn fx:id="colStatus" text="Stock Status" prefWidth="130" />
+                <TableColumn fx:id="colPrice" text="Unit Price" prefWidth="110" />
+                <TableColumn fx:id="colTotalValue" text="Stock Value" prefWidth="130" />
+                <TableColumn fx:id="colStatus" text="Status" prefWidth="120" />
             </columns>
         </TableView>
 
-        <!-- Selected Part Actions -->
-        <HBox spacing="12" alignment="CENTER_LEFT" styleClass="user-box">
-            <Label text="Actions for selected item:" styleClass="card-subtitle" />
-            <Button fx:id="btnRestock" text="📥 Restock Units" onAction="#handleRestock" styleClass="btn-primary" />
-            <Button fx:id="btnEditPrice" text="💲 Update Price" onAction="#handleEditPrice" styleClass="btn-secondary" />
+        <!-- Selected Part Actions Bar -->
+        <HBox spacing="12" alignment="CENTER_LEFT" styleClass="user-snippet">
+            <Label text="Selected Item:" styleClass="bento-label" />
+            <Button fx:id="btnRestock" text="Restock Units" onAction="#handleRestock" styleClass="btn-primary">
+                <graphic>
+                    <SVGPath content="M12 5v14 M5 12h14" styleClass="icon-btn" />
+                </graphic>
+            </Button>
+            <Button fx:id="btnEditPrice" text="Update Price" onAction="#handleEditPrice" styleClass="btn-secondary">
+                <graphic>
+                    <SVGPath content="M12 1v22 M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" styleClass="icon-svg" />
+                </graphic>
+            </Button>
         </HBox>
     </VBox>
 
 </VBox>
-

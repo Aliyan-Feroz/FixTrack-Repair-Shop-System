@@ -2,46 +2,76 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
 
 <StackPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="ui.controller.LoginController"
            styleClass="login-root">
 
-    <VBox styleClass="login-card">
-        <!-- Logo & Branding Header -->
-        <VBox alignment="CENTER" spacing="6">
-            <Label text="⚡" styleClass="login-icon" />
-            <Label text="FixTrack" styleClass="login-title" />
-            <Label text="Professional Repair Shop Management" styleClass="login-subtitle" />
-        </VBox>
+    <!-- Centered Floating Bento Card (880px x 520px) -->
+    <HBox styleClass="login-split-card">
 
-        <Separator />
+        <!-- Left Showcase Panel (45% width, ~380px) -->
+        <VBox styleClass="login-brand-panel" prefWidth="380" HBox.hgrow="NEVER">
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <SVGPath content="M13 2L3 14h9l-1 8 10-12h-9l1-8z" styleClass="icon-brand" />
+                <Label text="FixTrack" styleClass="brand-title" />
+            </HBox>
 
-        <!-- Input Fields -->
-        <VBox spacing="12">
-            <VBox spacing="4">
-                <Label text="Username" styleClass="card-subtitle" />
-                <TextField fx:id="usernameField" promptText="Enter username (admin)" onAction="#handleLogin" />
+            <Label text="Repair Workshop Workbench" styleClass="bento-label" />
+
+            <Region VBox.vgrow="ALWAYS" />
+
+            <!-- Clean 3-Item Feature Summary with Vector Checkmark Icons -->
+            <VBox spacing="16">
+                <HBox spacing="12" alignment="CENTER_LEFT">
+                    <SVGPath content="M20 6L9 17l-5-5" styleClass="icon-check" />
+                    <Label text="Real-Time Repair Lifecycle" styleClass="login-feature-item" />
+                </HBox>
+                <HBox spacing="12" alignment="CENTER_LEFT">
+                    <SVGPath content="M20 6L9 17l-5-5" styleClass="icon-check" />
+                    <Label text="Integrated Inventory &amp; Stock" styleClass="login-feature-item" />
+                </HBox>
+                <HBox spacing="12" alignment="CENTER_LEFT">
+                    <SVGPath content="M20 6L9 17l-5-5" styleClass="icon-check" />
+                    <Label text="Billing &amp; Payment Settlement" styleClass="login-feature-item" />
+                </HBox>
             </VBox>
 
-            <VBox spacing="4">
-                <Label text="Password" styleClass="card-subtitle" />
-                <PasswordField fx:id="passwordField" promptText="Enter password (1234)" onAction="#handleLogin" />
+            <Region VBox.vgrow="ALWAYS" />
+
+            <Label text="v1.0 LTS" styleClass="brand-badge" />
+        </VBox>
+
+        <!-- Right Sign-In Panel (55% width, ~500px) -->
+        <VBox styleClass="login-form-panel" HBox.hgrow="ALWAYS" alignment="CENTER">
+            <VBox maxWidth="320" spacing="16">
+                <VBox spacing="4">
+                    <Label text="Sign In" styleClass="header-title" />
+                    <Label text="Enter credentials to access workbench" styleClass="bento-label" />
+                </VBox>
+
+                <VBox spacing="10">
+                    <VBox spacing="4">
+                        <Label text="Username" styleClass="bento-label" />
+                        <TextField fx:id="usernameField" text="admin" promptText="admin" onAction="#handleLogin" styleClass="login-field" />
+                    </VBox>
+
+                    <VBox spacing="4">
+                        <Label text="Password" styleClass="bento-label" />
+                        <PasswordField fx:id="passwordField" promptText="••••" onAction="#handleLogin" styleClass="login-field" />
+                    </VBox>
+
+                    <Label fx:id="errorLabel" styleClass="badge-cancelled" visible="false" />
+                </VBox>
+
+                <VBox spacing="8" alignment="CENTER">
+                    <Button fx:id="btnLogin" text="Sign In" onAction="#handleLogin" maxWidth="Infinity" styleClass="btn-primary" />
+                    <Button text="Fill Demo Credentials" onAction="#handleQuickDemoFill" maxWidth="Infinity" styleClass="login-demo-link" />
+                </VBox>
             </VBox>
-
-            <Label fx:id="errorLabel" styleClass="login-error-label" />
         </VBox>
 
-        <!-- Actions -->
-        <VBox spacing="10" alignment="CENTER">
-            <Button fx:id="btnLogin" text="Sign In to Dashboard" onAction="#handleLogin" maxWidth="Infinity" styleClass="btn-primary" />
-            <Button text="Quick Fill Demo (admin / 1234)" onAction="#handleQuickDemoFill" maxWidth="Infinity" styleClass="btn-outline" />
-        </VBox>
-
-        <Separator />
-
-        <Label text="FixTrack System v1.0 • Built with JavaFX &amp; SQLite" styleClass="card-subtitle" />
-    </VBox>
+    </HBox>
 
 </StackPane>
-

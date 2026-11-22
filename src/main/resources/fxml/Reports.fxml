@@ -2,26 +2,28 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
 
 <ScrollPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="ui.controller.ReportsController"
             fitToWidth="true" styleClass="scroll-container">
 
-    <VBox spacing="20" styleClass="view-container">
+    <VBox spacing="18" styleClass="view-container">
 
-        <!-- Top Header & Action -->
+        <!-- Top Header Bar -->
         <HBox spacing="14" alignment="CENTER_LEFT">
-            <VBox spacing="2">
-                <Label text="System Analytics &amp; Reports" styleClass="card-title" />
-                <Label text="Financial breakdown, repair throughput, staff workload, and inventory valuation" styleClass="card-subtitle" />
-            </VBox>
+            <Label text="Analytics &amp; Performance" styleClass="header-title" />
 
             <Region HBox.hgrow="ALWAYS" />
 
-            <Button text="🔄 Refresh Analytics" onAction="#handleRefresh" styleClass="btn-secondary" />
+            <Button text="Refresh" onAction="#handleRefresh" styleClass="btn-secondary">
+                <graphic>
+                    <SVGPath content="M1 4v6h6 M3.51 15a9 9 0 1 0 2.13-9.36L1 10" styleClass="icon-svg" />
+                </graphic>
+            </Button>
         </HBox>
 
-        <!-- 1. Financial Performance Cards -->
+        <!-- 1. Bento Financial Metrics Row -->
         <GridPane hgap="14" vgap="14">
             <columnConstraints>
                 <ColumnConstraints percentWidth="20" />
@@ -31,165 +33,159 @@
                 <ColumnConstraints percentWidth="20" />
             </columnConstraints>
 
-            <!-- Card 1: Realized Revenue -->
-            <VBox GridPane.columnIndex="0" styleClass="kpi-card,kpi-emerald">
-                <HBox styleClass="kpi-header">
-                    <Label text="💵" styleClass="kpi-icon" />
-                    <Label text="REALIZED REVENUE" styleClass="kpi-title" />
-                </HBox>
-                <Label fx:id="lblRealizedRevenue" text="\$0.00" styleClass="kpi-value" />
-                <Label text="Paid invoices in cash / card" styleClass="kpi-subtext" />
+            <VBox GridPane.columnIndex="0" styleClass="bento-card,bento-featured-cyan">
+                <Label text="REALIZED REVENUE" styleClass="bento-label" />
+                <Label fx:id="lblRealizedRevenue" text="\$0.00" styleClass="bento-number" />
             </VBox>
 
-            <!-- Card 2: Pending Receivables -->
-            <VBox GridPane.columnIndex="1" styleClass="kpi-card,kpi-amber">
-                <HBox styleClass="kpi-header">
-                    <Label text="⏳" styleClass="kpi-icon" />
-                    <Label text="PENDING RECEIVABLES" styleClass="kpi-title" />
-                </HBox>
-                <Label fx:id="lblPendingReceivables" text="\$0.00" styleClass="kpi-value" />
-                <Label text="Outstanding customer invoices" styleClass="kpi-subtext" />
+            <VBox GridPane.columnIndex="1" styleClass="bento-card">
+                <Label text="PENDING RECEIVABLES" styleClass="bento-label" />
+                <Label fx:id="lblPendingReceivables" text="\$0.00" styleClass="bento-number" />
             </VBox>
 
-            <!-- Card 3: Total Invoiced -->
-            <VBox GridPane.columnIndex="2" styleClass="kpi-card,kpi-cyan">
-                <HBox styleClass="kpi-header">
-                    <Label text="🧾" styleClass="kpi-icon" />
-                    <Label text="TOTAL INVOICED" styleClass="kpi-title" />
-                </HBox>
-                <Label fx:id="lblTotalInvoiced" text="\$0.00" styleClass="kpi-value" />
-                <Label text="Gross billed repair value" styleClass="kpi-subtext" />
+            <VBox GridPane.columnIndex="2" styleClass="bento-card,bento-hero">
+                <Label text="TOTAL INVOICED" styleClass="bento-label" />
+                <Label fx:id="lblTotalInvoiced" text="\$0.00" styleClass="bento-number" />
             </VBox>
 
-            <!-- Card 4: Discounts Given -->
-            <VBox GridPane.columnIndex="3" styleClass="kpi-card,kpi-purple">
-                <HBox styleClass="kpi-header">
-                    <Label text="🏷️" styleClass="kpi-icon" />
-                    <Label text="DISCOUNTS GRANTED" styleClass="kpi-title" />
-                </HBox>
-                <Label fx:id="lblDiscountsGiven" text="\$0.00" styleClass="kpi-value" />
-                <Label text="Customer promotional savings" styleClass="kpi-subtext" />
+            <VBox GridPane.columnIndex="3" styleClass="bento-card">
+                <Label text="DISCOUNTS" styleClass="bento-label" />
+                <Label fx:id="lblDiscountsGiven" text="\$0.00" styleClass="bento-number" />
             </VBox>
 
-            <!-- Card 5: Average Ticket Value -->
-            <VBox GridPane.columnIndex="4" styleClass="kpi-card,kpi-teal">
-                <HBox styleClass="kpi-header">
-                    <Label text="📊" styleClass="kpi-icon" />
-                    <Label text="AVG REPAIR TICKET" styleClass="kpi-title" />
-                </HBox>
-                <Label fx:id="lblAverageTicket" text="\$0.00" styleClass="kpi-value" />
-                <Label text="Average revenue per invoice" styleClass="kpi-subtext" />
+            <VBox GridPane.columnIndex="4" styleClass="bento-card">
+                <Label text="AVERAGE TICKET" styleClass="bento-label" />
+                <Label fx:id="lblAverageTicket" text="\$0.00" styleClass="bento-number" />
             </VBox>
         </GridPane>
 
-        <!-- 2. Two-Column Layout: Job State Funnel & Technician Performance -->
+        <!-- 2. Two-Column Split: Lifecycle Funnel & Technician Productivity -->
         <HBox spacing="16">
-            <!-- Left: Repair State Funnel -->
-            <VBox spacing="12" HBox.hgrow="ALWAYS" styleClass="content-card" prefWidth="550">
-                <Label text="Repair Lifecycle Status Distribution" styleClass="card-title" />
-                <Label text="Current throughput across all state-machine stages" styleClass="card-subtitle" />
-
-                <VBox spacing="8">
-                    <!-- INTAKE -->
-                    <HBox alignment="CENTER_LEFT" spacing="10">
-                        <Label text="1. Intake (Device Received):" prefWidth="180" styleClass="card-subtitle" />
-                        <ProgressBar fx:id="pbIntake" prefWidth="200" progress="0.0" />
-                        <Label fx:id="lblCountIntake" text="0" styleClass="user-name" />
-                    </HBox>
-
-                    <!-- DIAGNOSIS -->
-                    <HBox alignment="CENTER_LEFT" spacing="10">
-                        <Label text="2. Diagnosis In Progress:" prefWidth="180" styleClass="card-subtitle" />
-                        <ProgressBar fx:id="pbDiag" prefWidth="200" progress="0.0" />
-                        <Label fx:id="lblCountDiag" text="0" styleClass="user-name" />
-                    </HBox>
-
-                    <!-- AWAITING APPROVAL -->
-                    <HBox alignment="CENTER_LEFT" spacing="10">
-                        <Label text="3. Awaiting Customer Approval:" prefWidth="180" styleClass="card-subtitle" />
-                        <ProgressBar fx:id="pbApproval" prefWidth="200" progress="0.0" />
-                        <Label fx:id="lblCountApproval" text="0" styleClass="user-name" />
-                    </HBox>
-
-                    <!-- REPAIRING -->
-                    <HBox alignment="CENTER_LEFT" spacing="10">
-                        <Label text="4. Active Repair in Progress:" prefWidth="180" styleClass="card-subtitle" />
-                        <ProgressBar fx:id="pbRepair" prefWidth="200" progress="0.0" />
-                        <Label fx:id="lblCountRepair" text="0" styleClass="user-name" />
-                    </HBox>
-
-                    <!-- QUALITY CHECK -->
-                    <HBox alignment="CENTER_LEFT" spacing="10">
-                        <Label text="5. Post-Repair Quality Check:" prefWidth="180" styleClass="card-subtitle" />
-                        <ProgressBar fx:id="pbQuality" prefWidth="200" progress="0.0" />
-                        <Label fx:id="lblCountQuality" text="0" styleClass="user-name" />
-                    </HBox>
-
-                    <!-- READY -->
-                    <HBox alignment="CENTER_LEFT" spacing="10">
-                        <Label text="6. Ready for Collection / Pay:" prefWidth="180" styleClass="card-subtitle" />
-                        <ProgressBar fx:id="pbReady" prefWidth="200" progress="0.0" />
-                        <Label fx:id="lblCountReady" text="0" styleClass="user-name" />
-                    </HBox>
-
-                    <!-- COMPLETED -->
-                    <HBox alignment="CENTER_LEFT" spacing="10">
-                        <Label text="7. Fully Completed &amp; Settled:" prefWidth="180" styleClass="card-subtitle" />
-                        <ProgressBar fx:id="pbCompleted" prefWidth="200" progress="0.0" />
-                        <Label fx:id="lblCountCompleted" text="0" styleClass="user-name" />
-                    </HBox>
-
-                    <!-- CANCELLED -->
-                    <HBox alignment="CENTER_LEFT" spacing="10">
-                        <Label text="8. Rejected / Cancelled:" prefWidth="180" styleClass="card-subtitle" />
-                        <ProgressBar fx:id="pbCancelled" prefWidth="200" progress="0.0" />
-                        <Label fx:id="lblCountCancelled" text="0" styleClass="user-name" />
-                    </HBox>
+            <!-- Left: Repair Lifecycle Funnel -->
+            <VBox spacing="12" HBox.hgrow="ALWAYS" styleClass="bento-card" prefWidth="600">
+                <VBox spacing="2">
+                    <Label text="Repair Lifecycle Funnel" styleClass="header-title" />
+                    <Label text="Repair Lifecycle Funnel" styleClass="bento-label" />
                 </VBox>
+
+                <HBox spacing="18" alignment="CENTER_LEFT">
+                    <!-- Funnel stage list on left -->
+                    <VBox spacing="6" prefWidth="175">
+                        <HBox alignment="CENTER_LEFT" spacing="8">
+                            <Label text="Intake" styleClass="bento-label" />
+                            <Region HBox.hgrow="ALWAYS" />
+                            <Label fx:id="lblCountIntake" text="0" styleClass="user-name" />
+                        </HBox>
+                        <HBox alignment="CENTER_LEFT" spacing="8">
+                            <Label text="Diagnosis" styleClass="bento-label" />
+                            <Region HBox.hgrow="ALWAYS" />
+                            <Label fx:id="lblCountDiag" text="0" styleClass="user-name" />
+                        </HBox>
+                        <HBox alignment="CENTER_LEFT" spacing="8">
+                            <Label text="Awaiting Approval" styleClass="bento-label" />
+                            <Region HBox.hgrow="ALWAYS" />
+                            <Label fx:id="lblCountApproval" text="0" styleClass="user-name" />
+                        </HBox>
+                        <HBox alignment="CENTER_LEFT" spacing="8">
+                            <Label text="Repairing" styleClass="bento-label" />
+                            <Region HBox.hgrow="ALWAYS" />
+                            <Label fx:id="lblCountRepair" text="0" styleClass="user-name" />
+                        </HBox>
+                        <HBox alignment="CENTER_LEFT" spacing="8">
+                            <Label text="Quality Check" styleClass="bento-label" />
+                            <Region HBox.hgrow="ALWAYS" />
+                            <Label fx:id="lblCountQuality" text="0" styleClass="user-name" />
+                        </HBox>
+                        <HBox alignment="CENTER_LEFT" spacing="8">
+                            <Label text="Ready for Collection" styleClass="bento-label" />
+                            <Region HBox.hgrow="ALWAYS" />
+                            <Label fx:id="lblCountReady" text="0" styleClass="user-name" />
+                        </HBox>
+                        <HBox alignment="CENTER_LEFT" spacing="8">
+                            <Label text="Completed" styleClass="bento-label" />
+                            <Region HBox.hgrow="ALWAYS" />
+                            <Label fx:id="lblCountCompleted" text="0" styleClass="user-name" />
+                        </HBox>
+                        <HBox alignment="CENTER_LEFT" spacing="8">
+                            <Label text="Cancelled" styleClass="bento-label" />
+                            <Region HBox.hgrow="ALWAYS" />
+                            <Label fx:id="lblCountCancelled" text="0" styleClass="user-name" />
+                        </HBox>
+                    </VBox>
+
+                    <!-- Center Donut Gauge -->
+                    <StackPane prefWidth="190" prefHeight="190">
+                        <Arc centerX="95" centerY="95" radiusX="70" radiusY="70" startAngle="30" length="70"
+                             type="OPEN" fill="transparent" stroke="#F59E0B" strokeWidth="18" strokeLineCap="ROUND" />
+                        <Arc centerX="95" centerY="95" radiusX="70" radiusY="70" startAngle="110" length="120"
+                             type="OPEN" fill="transparent" stroke="#06B6D4" strokeWidth="18" strokeLineCap="ROUND" />
+                        <Arc centerX="95" centerY="95" radiusX="70" radiusY="70" startAngle="240" length="80"
+                             type="OPEN" fill="transparent" stroke="#10B981" strokeWidth="18" strokeLineCap="ROUND" />
+                        <Arc centerX="95" centerY="95" radiusX="70" radiusY="70" startAngle="330" length="50"
+                             type="OPEN" fill="transparent" stroke="#F43F5E" strokeWidth="18" strokeLineCap="ROUND" />
+
+                        <Circle radius="52" styleClass="donut-center-circle" />
+
+                        <VBox alignment="CENTER" spacing="1">
+                            <Label fx:id="lblActiveRepairsTotal" text="0" styleClass="donut-text-number" />
+                            <Label text="ACTIVE" styleClass="donut-text-label" />
+                            <Label text="REPAIRS" styleClass="donut-text-label" />
+                        </VBox>
+                    </StackPane>
+
+                    <!-- Right Throughput Curve -->
+                    <VBox alignment="CENTER" spacing="8" prefWidth="110">
+                        <Label text="Weekly&#10;Throughput" styleClass="donut-text-label" textAlignment="CENTER" />
+                        <SVGPath content="M 22 0 C 45 35, 0 70, 32 105 C 50 140, 5 175, 22 200" styleClass="wave-throughput" />
+                    </VBox>
+                </HBox>
             </VBox>
 
             <!-- Right: Technician Productivity Table -->
-            <VBox spacing="10" styleClass="content-card" prefWidth="500">
-                <Label text="Technician Productivity Matrix" styleClass="card-title" />
-                <Label text="Live active workload vs lifetime completed repairs" styleClass="card-subtitle" />
+            <VBox spacing="8" styleClass="bento-card" prefWidth="480">
+                <VBox spacing="2">
+                    <Label text="Technician Productivity" styleClass="header-title" />
+                    <Label text="Technician Productivity" styleClass="bento-label" />
+                </VBox>
 
                 <TableView fx:id="tblTechStats" prefHeight="260">
                     <columns>
-                        <TableColumn fx:id="colTechName" text="Technician" prefWidth="140" />
+                        <TableColumn fx:id="colTechName" text="Technician" prefWidth="135" />
                         <TableColumn fx:id="colTechSpecialty" text="Specialty" prefWidth="160" />
-                        <TableColumn fx:id="colTechActiveJobs" text="Active Jobs" prefWidth="85" />
-                        <TableColumn fx:id="colTechCompletedJobs" text="Completed" prefWidth="85" />
+                        <TableColumn fx:id="colTechActiveJobs" text="Active" prefWidth="75" />
+                        <TableColumn fx:id="colTechCompletedJobs" text="Compl" prefWidth="75" />
                     </columns>
                 </TableView>
             </VBox>
         </HBox>
 
-        <!-- 3. Inventory Health Section -->
-        <VBox spacing="12" styleClass="content-card">
-            <Label text="Inventory Valuation &amp; Supply Health" styleClass="card-title" />
-
-            <HBox spacing="20">
-                <VBox spacing="4" styleClass="user-box" HBox.hgrow="ALWAYS">
-                    <Label text="Total Catalogue SKUs" styleClass="card-subtitle" />
-                    <Label fx:id="lblTotalSKUs" text="0" styleClass="kpi-value" />
-                    <Label text="Active unique inventory items tracked" styleClass="kpi-subtext" />
+        <!-- 3. Inventory Supply Health Bento Row -->
+        <HBox spacing="16">
+            <HBox spacing="16" alignment="CENTER_LEFT" styleClass="bento-card" HBox.hgrow="ALWAYS">
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="CATALOGUE SKUS" styleClass="bento-label" />
+                    <Label fx:id="lblTotalSKUs" text="0" styleClass="bento-number" />
                 </VBox>
-
-                <VBox spacing="4" styleClass="user-box" HBox.hgrow="ALWAYS">
-                    <Label text="Total Inventory Asset Value" styleClass="card-subtitle" />
-                    <Label fx:id="lblTotalInventoryValue" text="\$0.00" styleClass="kpi-value" />
-                    <Label text="Sum of (available units × unit selling price)" styleClass="kpi-subtext" />
-                </VBox>
-
-                <VBox spacing="4" styleClass="user-box" HBox.hgrow="ALWAYS">
-                    <Label text="Low Stock Reorder Alerts" styleClass="card-subtitle" />
-                    <Label fx:id="lblLowStockAlertCount" text="0" styleClass="kpi-value" />
-                    <Label text="Items at or below 5 units remaining" styleClass="kpi-subtext" />
-                </VBox>
+                <SVGPath content="M4 18v-4 M9 18v-8 M14 18v-12 M19 18v-6" styleClass="icon-spark-cyan" scaleX="1.8" scaleY="1.8" />
             </HBox>
-        </VBox>
+
+            <HBox spacing="16" alignment="CENTER_LEFT" styleClass="bento-card" HBox.hgrow="ALWAYS">
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="INVENTORY VALUATION" styleClass="bento-label" />
+                    <Label fx:id="lblTotalInventoryValue" text="\$0.00" styleClass="bento-number" />
+                </VBox>
+                <SVGPath content="M2 18 L10 14 L18 17 L26 8 L34 11 L42 2" styleClass="icon-spark-line" scaleX="1.8" scaleY="1.8" />
+            </HBox>
+
+            <HBox spacing="16" alignment="CENTER_LEFT" styleClass="bento-card" HBox.hgrow="ALWAYS">
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="LOW STOCK SKUS" styleClass="bento-label" />
+                    <Label fx:id="lblLowStockAlertCount" text="0" styleClass="bento-number" />
+                </VBox>
+                <SVGPath content="M4 18v-6 M9 18v-10 M14 18v-14 M19 18v-8" styleClass="icon-spark-coral" scaleX="1.8" scaleY="1.8" />
+            </HBox>
+        </HBox>
 
     </VBox>
 
 </ScrollPane>
-

@@ -2,6 +2,7 @@ package ui.controller;
 
 import business.JobCard;
 import dao.CustomerDAO;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -14,8 +15,11 @@ import javafx.scene.layout.VBox;
 import model.Customer;
 import ui.context.AppContext;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 public class CustomersController {
@@ -27,7 +31,9 @@ public class CustomersController {
     @FXML private TableColumn<Customer, String> colPhone;
     @FXML private TableColumn<Customer, Integer> colTotalJobs;
 
-    // Customer Detail Panel
+    // Contextual Detail Drawer
+    @FXML private VBox drawerEmptyState;
+    @FXML private VBox drawerContentState;
     @FXML private Label lblDetailName;
     @FXML private Label lblDetailPhone;
     @FXML private Label lblDetailTotalJobs;
@@ -35,7 +41,18 @@ public class CustomersController {
     @FXML private Button btnNewJobForCustomer;
 
     private final ObservableList<Customer> customerList = FXCollections.observableArrayList();
+    private final Map<Integer, Integer> customerJobCounts = new HashMap<>();
     private FilteredList<Customer> filteredCustomers;
+
+    private static class CustomerSnapshot {
+        final List<Customer> customers;
+        final Map<Integer, Integer> counts;
+
+        CustomerSnapshot(List<Customer> customers, Map<Integer, Integer> counts) {
+            this.customers = customers;
+            this.counts = counts;
+        }
+    }
 
     @FXML
     public void initialize() {
@@ -53,26 +70,37 @@ public class CustomersController {
         colName.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getName()));
         colPhone.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getPhone()));
 
-        // Calculate live job count from jobCardDAO
         colTotalJobs.setCellValueFactory(data -> {
             int cid = data.getValue().getCustomerId();
-            long count = AppContext.getInstance().getJobCardDAO().getAllJobCards().stream()
-                    .filter(j -> j.getCustomer() != null && j.getCustomer().getCustomerId() == cid)
-                    .count();
-            return new SimpleIntegerProperty((int) count).asObject();
+            int count = customerJobCounts.getOrDefault(cid, 0);
+            return new SimpleIntegerProperty(count).asObject();
         });
     }
 
     public void loadCustomers() {
-        CustomerDAO dao = AppContext.getInstance().getCustomerDAO();
-        List<Customer> list = dao.getAllCustomers();
-        customerList.setAll(list);
+        CompletableFuture.supplyAsync(() -> {
+            CustomerDAO dao = AppContext.getInstance().getCustomerDAO();
+            List<Customer> list = dao.getAllCustomers();
 
-        if (!customerList.isEmpty()) {
-            tblCustomers.getSelectionModel().selectFirst();
-        } else {
-            displayCustomerDetails(null);
-        }
+            Map<Integer, Integer> counts = new HashMap<>();
+            List<JobCard> allJobs = AppContext.getInstance().getJobCardDAO().getAllJobCards();
+            for (JobCard job : allJobs) {
+                if (job.getCustomer() != null) {
+                    counts.merge(job.getCustomer().getCustomerId(), 1, Integer::sum);
+                }
+            }
+            return new CustomerSnapshot(list, counts);
+        }).thenAccept(snap -> Platform.runLater(() -> {
+            customerJobCounts.clear();
+            customerJobCounts.putAll(snap.counts);
+            customerList.setAll(snap.customers);
+
+            if (!customerList.isEmpty()) {
+                tblCustomers.getSelectionModel().selectFirst();
+            } else {
+                displayCustomerDetails(null);
+            }
+        }));
     }
 
     private void setupSearchFilter() {
@@ -93,13 +121,13 @@ public class CustomersController {
 
     private void displayCustomerDetails(Customer c) {
         if (c == null) {
-            lblDetailName.setText("No customer selected");
-            lblDetailPhone.setText("-");
-            lblDetailTotalJobs.setText("0");
-            txtRepairHistory.setText("Select a customer from the directory to review repair history.");
-            if (btnNewJobForCustomer != null) btnNewJobForCustomer.setDisable(true);
+            if (drawerEmptyState != null) drawerEmptyState.setVisible(true);
+            if (drawerContentState != null) drawerContentState.setVisible(false);
             return;
         }
+
+        if (drawerEmptyState != null) drawerEmptyState.setVisible(false);
+        if (drawerContentState != null) drawerContentState.setVisible(true);
 
         lblDetailName.setText(c.getName());
         lblDetailPhone.setText(c.getPhone());
@@ -111,38 +139,30 @@ public class CustomersController {
         lblDetailTotalJobs.setText(String.valueOf(jobs.size()));
 
         StringBuilder sb = new StringBuilder();
-        sb.append("Customer ID: #").append(c.getCustomerId()).append("\n");
-        sb.append("Phone Contact: ").append(c.getPhone()).append("\n\n");
-        sb.append("── Repair History Records (").append(jobs.size()).append(") ──\n");
-
         if (jobs.isEmpty()) {
-            sb.append("No job cards recorded for this customer yet.");
+            sb.append("No recorded repair history for this customer.");
         } else {
             for (JobCard job : jobs) {
-                sb.append(String.format("• Job #%-3d | %-20s | Status: %-15s | Total: $%.2f%n",
+                sb.append(String.format("Job #%-3d  •  %-18s  •  %s  •  $%.2f%n",
                         job.getJobId(),
                         job.getDeviceDetails(),
                         job.getStatus(),
                         job.calculateTotal()));
-                if (job.getComplaint() != null && !job.getComplaint().isEmpty()) {
-                    sb.append("   Complaint: ").append(job.getComplaint()).append("\n");
-                }
-                if (job.getDiagnosis() != null && !job.getDiagnosis().isEmpty()) {
-                    sb.append("   Diagnosis: ").append(job.getDiagnosis()).append("\n");
+                if (job.getComplaint() != null && !job.getComplaint().isBlank()) {
+                    sb.append("  Issue: ").append(job.getComplaint()).append("\n");
                 }
                 sb.append("\n");
             }
         }
 
-        txtRepairHistory.setText(sb.toString());
-        if (btnNewJobForCustomer != null) btnNewJobForCustomer.setDisable(false);
+        txtRepairHistory.setText(sb.toString().trim());
     }
 
     @FXML
     private void handleAddCustomer() {
         Dialog<Customer> dialog = new Dialog<>();
-        dialog.setTitle("Register New Customer");
-        dialog.setHeaderText("Enter Customer Profile Details");
+        dialog.setTitle("Register Customer");
+        dialog.setHeaderText("New Customer Profile");
 
         DialogPane dialogPane = dialog.getDialogPane();
         dialogPane.getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
@@ -152,13 +172,13 @@ public class CustomersController {
         grid.setVgap(12);
 
         TextField nameField = new TextField();
-        nameField.setPromptText("e.g. John Doe");
+        nameField.setPromptText("Customer name");
         TextField phoneField = new TextField();
-        phoneField.setPromptText("e.g. 050-1234567");
+        phoneField.setPromptText("Phone number");
 
         grid.add(new Label("Full Name:"), 0, 0);
         grid.add(nameField, 1, 0);
-        grid.add(new Label("Phone Number:"), 0, 1);
+        grid.add(new Label("Phone:"), 0, 1);
         grid.add(phoneField, 1, 1);
 
         dialogPane.setContent(grid);
@@ -178,7 +198,6 @@ public class CustomersController {
         result.ifPresent(newCustomer -> {
             AppContext.getInstance().getCustomerDAO().addCustomer(newCustomer);
             loadCustomers();
-            // Select newly added customer
             tblCustomers.getItems().stream()
                     .filter(c -> c.getCustomerId() == newCustomer.getCustomerId())
                     .findFirst()
@@ -199,4 +218,3 @@ public class CustomersController {
         }
     }
 }
-
